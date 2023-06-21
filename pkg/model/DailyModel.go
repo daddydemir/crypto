@@ -17,3 +17,7 @@ type DailyModel struct {
 	Modulus    float32
 	ExchangeId string
 }
+
+func (d *DailyModel) create() {}
+
+// adapter design pattern
