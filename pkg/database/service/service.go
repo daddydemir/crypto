@@ -26,3 +26,21 @@ func GetDaily() []model.DailyModel {
 	}
 	return dailies
 }
+
+func GetExchange() []model.ExchangeModel {
+	var adapts []adapter.Adapter
+	adapts = coingecko.GetTopHundred()
+	var exchanges []model.ExchangeModel
+	for i := 0; i < len(adapts); i++ {
+		exchanges = append(exchanges, adapts[i].AdapterToExchange())
+	}
+	return exchanges
+}
+
+func CreateWeekly() {
+	var dailies []model.DailyModel
+	weekStart, weekEnd := getWeek()
+
+	database.D.Where("date between ? and ? ", weekStart, weekEnd).Find(&dailies)
+	// todo
+}
