@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"github.com/daddydemir/crypto/pkg/model"
+	"sort"
 	"time"
 )
 
@@ -18,4 +20,17 @@ func getWeek() (string, string) {
 	//fmt.Println("Bu haftanın bitişi:", weekEnd.Format("2006-01-02"))
 
 	return weekStart.Format("2006-01-02"), weekEnd.Format("2006-01-02")
+}
+
+func getToday() (string, string) {
+	today := time.Now()
+	nextDay := today.AddDate(0, 0, 1)
+	fmt.Println(today.Format("2006-01-02"), nextDay.Format("2006-01-02"))
+	return today.Format("2006-01-02"), nextDay.Format("2006-01-02")
+}
+
+func sortSlice(arr []model.DailyModel) {
+	sort.Slice(arr, func(i, j int) bool {
+		return arr[i].ExchangeId < arr[j].ExchangeId
+	})
 }
