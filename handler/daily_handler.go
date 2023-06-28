@@ -2,10 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/database/service"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -18,9 +18,11 @@ func dailyEnd(w http.ResponseWriter, r *http.Request) {
 }
 
 func daily(w http.ResponseWriter, r *http.Request) {
-	err := json.NewEncoder(w).Encode(service.GetDaily())
+	response := service.GetDaily()
+	log.Infoln("::daily:: response:{}", response)
+	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		log.Println("::daily:: err:{}", err)
+		log.Errorln("::daily:: err:{}", err)
 	}
 }
 
@@ -28,14 +30,16 @@ func getDaily(w http.ResponseWriter, r *http.Request) {
 	var request dao.Date
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Println("::getDaily::ReadAll err:{}", err)
+		log.Errorln("::getDaily::ReadAll err:{}", err)
 	}
 	err = json.Unmarshal(body, &request)
 	if err != nil {
-		log.Println("::getDaily::Unmarshal err:{}", err)
+		log.Errorln("::getDaily::Unmarshal err:{}", err)
 	}
-	err = json.NewEncoder(w).Encode(service.GetDailyFromDb(request))
+	response := service.GetDailyFromDb(request)
+	log.Infoln("::getDaily:: request:{} response:{}", request, response)
+	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
-		log.Println("::getDaily:: err:{}", err)
+		log.Errorln("::getDaily:: err:{}", err)
 	}
 }

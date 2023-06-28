@@ -2,9 +2,9 @@ package database
 
 import (
 	"github.com/daddydemir/crypto/config"
+	"github.com/daddydemir/crypto/config/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
 )
 
 var D *gorm.DB

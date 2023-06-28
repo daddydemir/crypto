@@ -2,18 +2,17 @@ package service
 
 import (
 	"github.com/daddydemir/crypto/config/database"
+	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/pkg/adapter"
 	"github.com/daddydemir/crypto/pkg/coingecko"
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
-	"log"
 )
 
 func GetDailyFromDatabase() []model.DailyModel {
 	var dailies []model.DailyModel
 	start, end := getToday()
 	database.D.Where("date between ? and ?", start, end).Find(&dailies)
-	log.Println(dailies[3])
 	return dailies
 }
 
@@ -28,7 +27,7 @@ func CreateDaily(morning bool) {
 		dailyFromDb := GetDailyFromDatabase()
 		sortSlice(dailyFromDb)
 		sortSlice(dailies)
-		
+
 		for i := 0; i < len(dailies); i++ {
 			if dailies[i].ExchangeId == dailyFromDb[i].ExchangeId {
 				dailyFromDb[i].LastPrice = dailies[i].LastPrice
@@ -47,7 +46,7 @@ func CreateDaily(morning bool) {
 				dailyFromDb[i].Modulus = dailyFromDb[i].Max - dailyFromDb[i].Min
 				dailyFromDb[i].Rate = dailyFromDb[i].Modulus * 100 / dailyFromDb[i].Avg
 			} else {
-				log.Println("::CreateDaily::false err:{}")
+				log.Infoln("::CreateDaily::false err:{}")
 			}
 
 		}

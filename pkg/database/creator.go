@@ -2,8 +2,8 @@ package database
 
 import (
 	"github.com/daddydemir/crypto/config/database"
+	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/pkg/model"
-	"log"
 )
 
 func CreateTables() {
@@ -14,6 +14,6 @@ func CreateTables() {
 		model.WeeklyModel{},
 	)
 	if err != nil {
-		log.Println("::CreateTables:: AutoMigrate err:{}", err)
+		log.Errorln("::CreateTables:: AutoMigrate err:{}", err)
 	}
 }
