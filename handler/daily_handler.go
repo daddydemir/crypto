@@ -43,3 +43,21 @@ func getDaily(w http.ResponseWriter, r *http.Request) {
 		log.Errorln("::getDaily:: err:{}", err)
 	}
 }
+
+func getDailyWithId(w http.ResponseWriter, r *http.Request) {
+	var request dao.Date
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Errorln("::getDailyWithId::ReadAll err:{}", err)
+	}
+	err = json.Unmarshal(body, &request)
+	if err != nil {
+		log.Errorln("::getDailyWithId::Unmarshal err:{}", err)
+	}
+	response := service.GetDailyWithId(request)
+	log.Infoln("::getDailyWithId:: request:{} response:{}", request, response)
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		log.Errorln("::getDailyWithId:: err:{}", err)
+	}
+}

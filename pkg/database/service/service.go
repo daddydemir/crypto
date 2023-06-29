@@ -73,6 +73,12 @@ func GetDailyFromDb(date dao.Date) []model.DailyModel {
 	return dailies
 }
 
+func GetDailyWithId(date dao.Date) []model.DailyModel {
+	var dailies []model.DailyModel
+	database.D.Where("date between ? and ? and exchange_id = ?", date.StartDate, date.EndDate, date.Id).Find(&dailies)
+	return dailies
+}
+
 func GetExchange() []model.ExchangeModel {
 	var adapts []adapter.Adapter
 	adapts = coingecko.GetTopHundred()
