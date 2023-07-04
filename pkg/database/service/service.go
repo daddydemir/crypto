@@ -1,12 +1,14 @@
 package service
 
 import (
+	"fmt"
 	"github.com/daddydemir/crypto/config/database"
 	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/pkg/adapter"
 	"github.com/daddydemir/crypto/pkg/coingecko"
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
+	"github.com/daddydemir/crypto/pkg/telegram"
 )
 
 func GetDailyFromDatabase() []model.DailyModel {
@@ -51,6 +53,7 @@ func CreateDaily(morning bool) {
 
 		}
 		database.D.Save(&dailyFromDb)
+		CreateMessage()
 		return
 	}
 
@@ -111,4 +114,25 @@ func CreateWeekly() {
 
 	database.D.Where("date between ? and ? ", weekStart, weekEnd).Find(&dailies)
 	// todo
+}
+
+func CreateMessage() (string, string) {
+	var smaller []model.DailyModel
+	var bigger []model.DailyModel
+	var m1, m2, rate, mod string
+
+	start, end := getToday()
+	database.D.Where("date between ? and ? and avg > 1 order by rate desc limit 5", start, end).Find(&bigger)
+	database.D.Where("date between ? and ? and avg < 1 order by rate desc limit 5", start, end).Find(&smaller)
+	for i := 0; i < 5; i++ {
+		rate = fmt.Sprintf("%.2f", bigger[i].Rate)
+		mod = fmt.Sprintf("%.1f", bigger[i].Modulus)
+		m1 += "(" + bigger[i].ExchangeId + ")\t %" + rate + "\t | \t" + mod + "$ \n"
+
+		rate = fmt.Sprintf("%.2f", smaller[i].Rate)
+		mod = fmt.Sprintf("%v", smaller[i].Modulus)
+		m2 += "(" + smaller[i].ExchangeId + ")\t %" + rate + "\t | \t" + mod + "$ \n"
+	}
+	telegram.Pre(m1, m2)
+	return m1, m2
 }

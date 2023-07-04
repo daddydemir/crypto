@@ -34,3 +34,9 @@ func sortSlice(arr []model.DailyModel) {
 		return arr[i].ExchangeId < arr[j].ExchangeId
 	})
 }
+
+func sortSliceWithRate(arr []model.DailyModel) {
+	sort.Slice(arr, func(i, j int) bool {
+		return arr[i].Rate > arr[j].Rate
+	})
+}

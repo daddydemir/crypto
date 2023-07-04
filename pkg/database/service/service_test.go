@@ -33,3 +33,8 @@ func TestGetDailyWithId(t *testing.T) {
 	response := GetDailyWithId(date)
 	fmt.Println(response)
 }
+
+func TestCreateMessage(t *testing.T) {
+	database.InitMySQLConnect()
+	CreateMessage()
+}
