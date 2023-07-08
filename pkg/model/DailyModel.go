@@ -20,4 +20,8 @@ type DailyModel struct {
 
 func (d *DailyModel) create() {}
 
-// adapter design pattern
+func (d DailyModel) ToMap() map[string]DailyModel {
+	m := make(map[string]DailyModel)
+	m[d.ExchangeId] = d
+	return m
+}

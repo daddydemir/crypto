@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/daddydemir/crypto/pkg/model"
 	"sort"
 	"time"
@@ -10,7 +9,6 @@ import (
 func getWeek() (string, string) {
 	// Bugünün tarihini almak
 	today := time.Now()
-	fmt.Println("Bugün:", today.Format("2006-01-02"))
 
 	// Bu haftanın başlangıcı ve bitişini belirlemek
 	weekStart := today.AddDate(0, 0, int(time.Monday-today.Weekday()))
@@ -25,7 +23,6 @@ func getWeek() (string, string) {
 func getToday() (string, string) {
 	today := time.Now()
 	nextDay := today.AddDate(0, 0, 1)
-	fmt.Println(today.Format("2006-01-02"), nextDay.Format("2006-01-02"))
 	return today.Format("2006-01-02"), nextDay.Format("2006-01-02")
 }
 

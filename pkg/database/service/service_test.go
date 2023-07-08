@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/daddydemir/crypto/config/database"
 	"github.com/daddydemir/crypto/pkg/dao"
+	"github.com/daddydemir/crypto/pkg/model"
 	"testing"
 )
 
@@ -37,4 +38,17 @@ func TestGetDailyWithId(t *testing.T) {
 func TestCreateMessage(t *testing.T) {
 	database.InitMySQLConnect()
 	CreateMessage()
+}
+
+func TestTemp(t *testing.T) {
+	database.InitMySQLConnect()
+	var date dao.Date
+	date.StartDate, date.EndDate = getToday()
+	db := GetDailyFromDb(date)
+	m := make(map[string]model.DailyModel)
+
+	for i := 0; i < len(db); i++ {
+		m = MergeMap(m, db[i].ToMap())
+	}
+	fmt.Println(len(m))
 }

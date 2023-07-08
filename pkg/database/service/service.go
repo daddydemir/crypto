@@ -18,6 +18,18 @@ func GetDailyFromDatabase() []model.DailyModel {
 	return dailies
 }
 
+func Temp() {}
+
+func MergeMap(m1, m2 map[string]model.DailyModel) map[string]model.DailyModel {
+	merged := make(map[string]model.DailyModel, len(m1)+len(m2))
+	merged = m1
+	for key, value := range m2 {
+		merged[key] = value
+	}
+
+	return merged
+}
+
 func CreateDaily(morning bool) {
 	var adapts []adapter.Adapter
 	adapts = coingecko.GetTopHundred()
@@ -26,34 +38,46 @@ func CreateDaily(morning bool) {
 		dailies = append(dailies, adapts[i].AdapterToDaily(morning))
 	}
 	if !morning {
+		db := make(map[string]model.DailyModel)
+		gecko := make(map[string]model.DailyModel)
 		dailyFromDb := GetDailyFromDatabase()
-		sortSlice(dailyFromDb)
-		sortSlice(dailies)
+		save := []model.DailyModel{}
 
 		for i := 0; i < len(dailies); i++ {
-			if dailies[i].ExchangeId == dailyFromDb[i].ExchangeId {
-				dailyFromDb[i].LastPrice = dailies[i].LastPrice
-
-				//Min
-				if dailyFromDb[i].Min > dailies[i].Min {
-					dailyFromDb[i].Min = dailies[i].Min
-				}
-
-				//Max
-				if dailyFromDb[i].Max < dailies[i].Max {
-					dailyFromDb[i].Max = dailies[i].Max
-				}
-
-				dailyFromDb[i].Avg = (dailyFromDb[i].Min + dailyFromDb[i].Max) / 2
-				dailyFromDb[i].Modulus = dailyFromDb[i].Max - dailyFromDb[i].Min
-				dailyFromDb[i].Rate = dailyFromDb[i].Modulus * 100 / dailyFromDb[i].Avg
-			} else {
-				log.Infoln("::CreateDaily::false err:{}")
-			}
+			gecko = MergeMap(gecko, dailies[i].ToMap())
+			db = MergeMap(db, dailyFromDb[i].ToMap())
 
 		}
-		database.D.Save(&dailyFromDb)
+
+		current := model.DailyModel{}
+
+		for key, value := range gecko {
+			current = db[key]
+			if current.ExchangeId == "" {
+				continue
+			}
+			current.LastPrice = value.LastPrice
+			if current.Min > value.Min {
+				current.Min = value.Min
+			}
+
+			if current.Max < value.Max {
+				current.Max = value.Max
+			}
+
+			current.Avg = (current.Min + current.Max) / 2
+			current.Modulus = current.Max - current.Min
+			current.Rate = current.Modulus * 100 / current.Avg
+
+			save = append(save, current)
+		}
+
+		result := database.D.Save(&save)
+		if result.Error != nil {
+			log.Errorln(result.Error)
+		}
 		CreateMessage()
+
 		return
 	}
 
