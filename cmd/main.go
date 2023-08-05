@@ -11,6 +11,7 @@ import (
 func main() {
 
 	database.InitMySQLConnect()
+	config.NewRabbitMQ()
 	log.InitLogger()
 
 	server := &http.Server{

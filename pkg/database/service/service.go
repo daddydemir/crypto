@@ -8,7 +8,7 @@ import (
 	"github.com/daddydemir/crypto/pkg/coingecko"
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
-	"github.com/daddydemir/crypto/pkg/telegram"
+	"github.com/daddydemir/crypto/pkg/rabbitmq"
 )
 
 func GetDailyFromDatabase() []model.DailyModel {
@@ -17,8 +17,6 @@ func GetDailyFromDatabase() []model.DailyModel {
 	database.D.Where("date between ? and ?", start, end).Find(&dailies)
 	return dailies
 }
-
-func Temp() {}
 
 func MergeMap(m1, m2 map[string]model.DailyModel) map[string]model.DailyModel {
 	merged := make(map[string]model.DailyModel, len(m1)+len(m2))
@@ -140,7 +138,7 @@ func CreateWeekly() {
 	// todo
 }
 
-func CreateMessage() (string, string) {
+func CreateMessage() {
 	var smaller []model.DailyModel
 	var bigger []model.DailyModel
 	var m1, m2, rate, mod string
@@ -157,6 +155,7 @@ func CreateMessage() (string, string) {
 		mod = fmt.Sprintf("%v", smaller[i].Modulus)
 		m2 += "(" + smaller[i].ExchangeId + ")\t %" + rate + "\t | \t" + mod + "$ \n"
 	}
-	telegram.Pre(m1, m2)
-	return m1, m2
+	// todo - this code will be update
+	rabbitmq.SendQueue(m1)
+	rabbitmq.SendQueue(m2)
 }
