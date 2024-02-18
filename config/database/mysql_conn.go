@@ -16,4 +16,5 @@ func InitMySQLConnect() {
 		log.Fatal("Database connection error: ", err)
 	}
 	D = db
+	log.Infoln("Connected to database")
 }

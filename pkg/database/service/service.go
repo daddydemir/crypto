@@ -11,6 +11,13 @@ import (
 	"github.com/daddydemir/crypto/pkg/rabbitmq"
 )
 
+func GetDailyForGraph() []model.DailyModel {
+	var dailies []model.DailyModel
+	start, end := getPeriodForTwoWeeks()
+	database.D.Where("date between ? and ? order by exchange_id, date", start, end).Find(&dailies)
+	return dailies
+}
+
 func GetDailyFromDatabase() []model.DailyModel {
 	var dailies []model.DailyModel
 	start, end := getToday()
@@ -39,7 +46,7 @@ func CreateDaily(morning bool) {
 		db := make(map[string]model.DailyModel)
 		gecko := make(map[string]model.DailyModel)
 		dailyFromDb := GetDailyFromDatabase()
-		save := []model.DailyModel{}
+		var save []model.DailyModel
 
 		for i := 0; i < len(dailies); i++ {
 			gecko = MergeMap(gecko, dailies[i].ToMap())

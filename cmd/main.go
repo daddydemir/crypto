@@ -5,14 +5,17 @@ import (
 	"github.com/daddydemir/crypto/config/database"
 	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/handler"
+	"github.com/daddydemir/crypto/pkg/cronjob"
 	"net/http"
 )
 
 func main() {
 
+	log.InitLogger()
 	database.InitMySQLConnect()
 	config.NewRabbitMQ()
-	log.InitLogger()
+
+	cronjob.StartCronJob()
 
 	server := &http.Server{
 		Addr:    config.Get("PORT"),

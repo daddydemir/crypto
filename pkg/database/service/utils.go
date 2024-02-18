@@ -17,7 +17,7 @@ func getWeek() (string, string) {
 	//fmt.Println("Bu haftanın başlangıcı:", weekStart.Format("2006-01-02"))
 	//fmt.Println("Bu haftanın bitişi:", weekEnd.Format("2006-01-02"))
 
-	return weekStart.Format("2006-01-02"), weekEnd.Format("2006-01-02")
+	return time2string(weekStart), time2string(weekEnd)
 }
 
 func getToday() (string, string) {
@@ -36,4 +36,15 @@ func sortSliceWithRate(arr []model.DailyModel) {
 	sort.Slice(arr, func(i, j int) bool {
 		return arr[i].Rate > arr[j].Rate
 	})
+}
+
+func getPeriodForTwoWeeks() (string, string) {
+	today := time.Now
+	start := today().AddDate(0, 0, -13)
+
+	return time2string(start), time2string(today())
+}
+
+func time2string(t time.Time) string {
+	return t.Format("2006-01-02")
 }

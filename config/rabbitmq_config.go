@@ -15,6 +15,8 @@ func NewRabbitMQ() {
 		log.Fatal("RabbitMQ connection was failed : ", err)
 	}
 
+	log.Println("Connecting to RabbitMQ")
+
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Println(err)
