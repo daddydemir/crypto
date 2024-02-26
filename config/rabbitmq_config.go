@@ -1,8 +1,8 @@
 package config
 
 import (
+	"github.com/daddydemir/crypto/config/log"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"log"
 )
 
 var Channel *amqp.Channel
@@ -12,14 +12,14 @@ func NewRabbitMQ() {
 	conn, err := amqp.Dial(Get("RABBIT_MQ_URL"))
 
 	if err != nil {
-		log.Fatal("RabbitMQ connection was failed : ", err)
+		log.LOG.Fatal("RabbitMQ connection was failed : ", err)
 	}
 
-	log.Println("Connecting to RabbitMQ")
+	log.LOG.Println("Connecting to RabbitMQ")
 
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Println(err)
+		log.LOG.Errorln(err)
 	}
 
 	Channel = ch

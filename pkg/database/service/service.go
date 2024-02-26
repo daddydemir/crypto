@@ -38,6 +38,10 @@ func MergeMap(m1, m2 map[string]model.DailyModel) map[string]model.DailyModel {
 func CreateDaily(morning bool) {
 	var adapts []adapter.Adapter
 	adapts = coingecko.GetTopHundred()
+	if len(adapts) == 0 {
+		log.LOG.Warn("coingecko GetTopHundred list is empty")
+		return
+	}
 	var dailies []model.DailyModel
 	for i := 0; i < len(adapts); i++ {
 		dailies = append(dailies, adapts[i].AdapterToDaily(morning))
@@ -92,6 +96,14 @@ func CreateDaily(morning bool) {
 func GetDaily() []model.DailyModel {
 	var adapts []adapter.Adapter
 	adapts = coingecko.GetTopHundred()
+
+	if len(adapts) == 0 {
+		log.LOG.Warn("No adapter found")
+		return nil
+	} else {
+		log.LOG.Warn(adapts)
+	}
+
 	var dailies []model.DailyModel
 	for i := 0; i < len(adapts); i++ {
 		dailies = append(dailies, adapts[i].AdapterToDaily(true))
@@ -114,6 +126,12 @@ func GetDailyWithId(date dao.Date) []model.DailyModel {
 func GetExchange() []model.ExchangeModel {
 	var adapts []adapter.Adapter
 	adapts = coingecko.GetTopHundred()
+
+	if len(adapts) == 0 {
+		log.LOG.Warn("No adapters found")
+		return nil
+	}
+
 	var exchanges []model.ExchangeModel
 	for i := 0; i < len(adapts); i++ {
 		exchanges = append(exchanges, adapts[i].AdapterToExchange())
@@ -124,6 +142,12 @@ func GetExchange() []model.ExchangeModel {
 func CreateExchange() {
 	var adapts []adapter.Adapter
 	adapts = coingecko.GetTopHundred()
+
+	if len(adapts) == 0 {
+		log.LOG.Warn("No adapts found")
+		return
+	}
+
 	var exchanges []model.ExchangeModel
 	for i := 0; i < len(adapts); i++ {
 		exchanges = append(exchanges, adapts[i].AdapterToExchange())
