@@ -50,6 +50,10 @@ func CreateDaily(morning bool) {
 		db := make(map[string]model.DailyModel)
 		gecko := make(map[string]model.DailyModel)
 		dailyFromDb := GetDailyFromDatabase()
+		if len(dailyFromDb) == 0 {
+			log.LOG.Warn("database getDalyFromDb list is empty")
+			return
+		}
 		var save []model.DailyModel
 
 		for i := 0; i < len(dailies); i++ {
