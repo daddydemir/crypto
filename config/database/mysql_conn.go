@@ -7,9 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var D *gorm.DB
+type MySQLDB struct {
+}
 
-func InitMySQLConnect() {
+func (d *MySQLDB) Connect() {
 	dsn := config.Get("DSN")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -17,4 +18,8 @@ func InitMySQLConnect() {
 	}
 	D = db
 	log.Infoln("Connected to database")
+}
+
+func (d *MySQLDB) Close() {
+	// not implemented ...
 }

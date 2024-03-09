@@ -6,13 +6,16 @@ import (
 	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/handler"
 	"github.com/daddydemir/crypto/pkg/cronjob"
+	dbservive "github.com/daddydemir/crypto/pkg/database"
 	"net/http"
 )
 
 func main() {
 
 	log.InitLogger()
-	database.InitMySQLConnect()
+	db := database.PostgresDB{}
+	db.Connect()
+	dbservive.CreateTables()
 	config.NewRabbitMQ()
 
 	cronjob.StartCronJob()
