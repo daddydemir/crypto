@@ -9,6 +9,7 @@ import (
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
 	"github.com/daddydemir/crypto/pkg/rabbitmq"
+	"time"
 )
 
 func GetDailyForGraph() []model.DailyModel {
@@ -20,8 +21,9 @@ func GetDailyForGraph() []model.DailyModel {
 
 func GetDailyFromDatabase() []model.DailyModel {
 	var dailies []model.DailyModel
-	start, end := getToday()
-	database.D.Where("date between ? and ?", start, end).Find(&dailies)
+
+	database.D.Where(" date > ?", time.Now().AddDate(0, 0, -1)).Find(&dailies)
+
 	return dailies
 }
 
