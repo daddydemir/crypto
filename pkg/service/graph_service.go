@@ -12,7 +12,7 @@ var myMap map[string][]model.DailyModel
 
 func RSIGraph() {
 	models := service.GetDailyForGraph()
-	println(len(models))
+	prepareData(models)
 	calculateRsiIndex()
 
 }
