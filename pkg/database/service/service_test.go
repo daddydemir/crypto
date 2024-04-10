@@ -2,7 +2,9 @@ package service
 
 import (
 	"fmt"
+	"github.com/daddydemir/crypto/config"
 	"github.com/daddydemir/crypto/config/database"
+	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
 	"testing"
@@ -10,12 +12,16 @@ import (
 
 func TestCreateDaily(t *testing.T) {
 
-	database.InitMySQLConnect()
+	log.InitLogger()
+
+	db := database.PostgresDB{}
+	db.Connect()
+
 	CreateDaily(false)
 }
 
 func TestGetDailyFromDatabase(t *testing.T) {
-	database.InitMySQLConnect()
+	//	database.InitMySQLConnect()
 	models := GetDailyFromDatabase()
 	//SortSlice(models)
 
@@ -25,7 +31,7 @@ func TestGetDailyFromDatabase(t *testing.T) {
 }
 
 func TestGetDailyWithId(t *testing.T) {
-	database.InitMySQLConnect()
+	//	database.InitMySQLConnect()
 	var date dao.Date
 	date.Id = "gala"
 	date.StartDate = "2023-06-22"
@@ -36,12 +42,18 @@ func TestGetDailyWithId(t *testing.T) {
 }
 
 func TestCreateMessage(t *testing.T) {
-	database.InitMySQLConnect()
+	log.InitLogger()
+
+	db := database.PostgresDB{}
+	db.Connect()
+
+	config.NewRabbitMQ()
+
 	CreateMessage()
 }
 
 func TestTemp(t *testing.T) {
-	database.InitMySQLConnect()
+	//database.InitMySQLConnect()
 	var date dao.Date
 	date.StartDate, date.EndDate = getToday()
 	db := GetDailyFromDb(date)

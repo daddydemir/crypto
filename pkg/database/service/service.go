@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/daddydemir/crypto/config/database"
 	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/pkg/adapter"
@@ -9,7 +11,6 @@ import (
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
 	"github.com/daddydemir/crypto/pkg/rabbitmq"
-	"time"
 )
 
 func GetDailyForGraph() []model.DailyModel {
@@ -180,9 +181,10 @@ func CreateMessage() {
 	var bigger []model.DailyModel
 	var m1, m2, rate, mod string
 
-	start, end := getToday()
-	database.D.Where("date between ? and ? and avg > 1 order by rate desc limit 5", start, end).Find(&bigger)
-	database.D.Where("date between ? and ? and avg < 1 order by rate desc limit 5", start, end).Find(&smaller)
+	startDate := time.Now()
+	endDate := time.Now().AddDate(0, 0, -1)
+	database.D.Where("date between ? and ? and avg > 1 order by rate desc limit 5", endDate, startDate).Find(&bigger)
+	database.D.Where("date between ? and ? and avg < 1 order by rate desc limit 5", endDate, startDate).Find(&smaller)
 	for i := 0; i < 5; i++ {
 		rate = fmt.Sprintf("%.2f", bigger[i].Rate)
 		mod = fmt.Sprintf("%.1f", bigger[i].Modulus)
@@ -192,7 +194,6 @@ func CreateMessage() {
 		mod = fmt.Sprintf("%v", smaller[i].Modulus)
 		m2 += "(" + smaller[i].ExchangeId + ")\t %" + rate + "\t | \t" + mod + "$ \n"
 	}
-	// todo - this code will be update
 	rabbitmq.SendQueue(m1)
 	rabbitmq.SendQueue(m2)
 }
