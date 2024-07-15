@@ -1,5 +1,6 @@
 package graphs
 
 type Graph interface {
-	calculate()
+	Calculate()
+	Draw()
 }
