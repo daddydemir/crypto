@@ -23,6 +23,12 @@ func prepareData(models []model.DailyModel) {
 
 	for _, item := range models {
 
+		if item.ExchangeId == "trx" {
+			//
+		} else {
+			continue
+		}
+
 		if myMap[item.ExchangeId] != nil {
 			currentList := myMap[item.ExchangeId]
 			currentList = append(currentList, item)
@@ -38,11 +44,10 @@ func prepareData(models []model.DailyModel) {
 func calculateRsiIndex() {
 
 	var (
-		lastIndex     float32
-		positiveSum   float32
-		negativeSum   float32
-		positiveCount int
-		negativeCount int
+		positiveSum,
+		negativeSum,
+		gain,
+		loss float32
 	)
 
 	for key, value := range myMap {
@@ -51,23 +56,22 @@ func calculateRsiIndex() {
 		for i, item := range value {
 
 			if i == 0 {
-				positiveSum += item.Avg
-				positiveCount++
-			} else {
-				if lastIndex > item.Avg {
-					negativeSum += item.Avg
-					negativeCount++
-				} else {
-					positiveSum += item.Avg
-					positiveCount++
-				}
+				continue
 			}
-			lastIndex = item.Avg
+
+			data := item.Avg - value[i-1].Avg
+
+			fmt.Printf("index: %v minus: %v \n", i, data)
+
+			if data > 0 {
+				gain += data
+			} else {
+				loss += data
+			}
 		}
-		positiveSum = positiveSum / float32(positiveCount)
-		negativeSum = negativeSum / float32(negativeCount)
+		positiveSum = gain / 14
 		rsiCount := 100 - (100 / (1 + (positiveSum / negativeSum)))
-		log.Infoln("positive count: %v \nnegative count: %v \npositive avg : %v \nnegative avg : %v \n", positiveCount, negativeCount, positiveSum, negativeSum)
+		log.Infoln("positive avg : %v \nnegative avg : %v \n", positiveSum, negativeSum)
 		log.Infoln("RSI : %.4f", rsiCount)
 
 		if rsiCount <= 30 || rsiCount >= 70 {

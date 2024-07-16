@@ -3,6 +3,7 @@ module github.com/daddydemir/crypto
 go 1.20
 
 require (
+	github.com/go-echarts/go-echarts/v2 v2.4.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
@@ -13,30 +14,19 @@ require (
 	github.com/rs/cors v1.9.0
 	github.com/sirupsen/logrus v1.9.3
 	gorm.io/driver/mysql v1.5.1
+	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.10
 )
 
 require (
-	git.sr.ht/~sbinet/gg v0.5.0 // indirect
-	github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b // indirect
-	github.com/campoy/embedmd v1.0.0 // indirect
-	github.com/go-echarts/go-echarts/v2 v2.4.0 // indirect
-	github.com/go-fonts/liberation v0.3.1 // indirect
-	github.com/go-latex/latex v0.0.0-20230307184459-12ec69307ad9 // indirect
-	github.com/go-pdf/fpdf v0.8.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.4.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/image v0.11.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
-	gonum.org/v1/plot v0.14.0 // indirect
-	gorm.io/driver/postgres v1.5.7 // indirect
 )

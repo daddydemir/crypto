@@ -40,7 +40,7 @@ func sortSliceWithRate(arr []model.DailyModel) {
 
 func getPeriodForTwoWeeks() (string, string) {
 	today := time.Now
-	start := today().AddDate(0, 0, -13)
+	start := today().AddDate(0, 0, -14)
 
 	return time2string(start), time2string(today())
 }
