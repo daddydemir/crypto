@@ -20,7 +20,7 @@ func (r RSI) Calculate(s string) []model.RsiModel {
 
 	start, end := 0, 14
 
-	for end < len(history) {
+	for end <= len(history) {
 		rsiModel := calculateIndex(history[start:end])
 		response = append(response, rsiModel)
 		start++
