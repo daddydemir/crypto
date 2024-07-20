@@ -23,12 +23,6 @@ func prepareData(models []model.DailyModel) {
 
 	for _, item := range models {
 
-		if item.ExchangeId == "trx" {
-			//
-		} else {
-			continue
-		}
-
 		if myMap[item.ExchangeId] != nil {
 			currentList := myMap[item.ExchangeId]
 			currentList = append(currentList, item)
@@ -70,6 +64,7 @@ func calculateRsiIndex() {
 			}
 		}
 		positiveSum = gain / 14
+		negativeSum = loss / 14 * -1
 		rsiCount := 100 - (100 / (1 + (positiveSum / negativeSum)))
 		log.Infoln("positive avg : %v \nnegative avg : %v \n", positiveSum, negativeSum)
 		log.Infoln("RSI : %.4f", rsiCount)

@@ -27,6 +27,11 @@ func SendQueue(message string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	closed := config.Channel.IsClosed()
+	if closed {
+		config.NewRabbitMQ()
+	}
+
 	err := config.Channel.PublishWithContext(ctx, "", getQueue(config.Get("QUEUE_NAME")).Name, false, false, amqp.Publishing{
 		ContentType: "text/plain",
 		Body:        []byte(message),
