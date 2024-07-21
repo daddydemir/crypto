@@ -15,6 +15,7 @@ func Route() http.Handler {
 	subRouter := r.PathPrefix(base).Subrouter()
 	subRouter.HandleFunc("/graph/rsi/{coin}", rsiHandler).Methods(http.MethodGet)
 	subRouter.HandleFunc("/graph/sma/{coin}", smaHandler).Methods(http.MethodGet)
+	subRouter.HandleFunc("/graph/main", mainHandler).Methods(http.MethodGet)
 
 	subRouter.HandleFunc("/dailyStart", dailyStart).Methods(http.MethodGet)
 	subRouter.HandleFunc("/dailyEnd", dailyEnd).Methods(http.MethodGet)
