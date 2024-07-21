@@ -37,14 +37,14 @@ func prepareData(models []model.DailyModel) {
 
 func calculateRsiIndex() {
 
-	var (
-		positiveSum,
-		negativeSum,
-		gain,
-		loss float32
-	)
-
 	for key, value := range myMap {
+
+		var (
+			positiveSum,
+			negativeSum,
+			gain,
+			loss float32
+		)
 
 		log.Infoln("starting for : ", key)
 		for i, item := range value {
@@ -55,7 +55,7 @@ func calculateRsiIndex() {
 
 			data := item.Avg - value[i-1].Avg
 
-			fmt.Printf("index: %v minus: %v \n", i, data)
+			//fmt.Printf("index: %v minus: %v \n", i, data)
 
 			if data > 0 {
 				gain += data
