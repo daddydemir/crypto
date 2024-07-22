@@ -31,6 +31,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 								<th data-sort="price"> Price </th>
 								<th> RSI </th>
 								<th> SMA </th>
+								<th> EMA </th>
 							</tr>
 						</thead>
 						<tbody>
@@ -62,12 +63,15 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	<td> %.3f </td>
 	<td> <a href="%s" target="_blank"> graph </a> </td>
 	<td> <a href="%s" target="_blank"> graph </a> </td>
+	<td> <a href="%s" target="_blank"> graph </a> </td>
 </tr>
 `
 	var contents string
 	for _, coin := range coins {
 		temp := content
-		temp = fmt.Sprintf(temp, coin.Name, coin.Symbol, coin.PriceUsd, "/api/v1/graph/rsi/"+coin.Id, "/api/v1/graph/sma/"+coin.Id)
+		temp = fmt.Sprintf(temp, coin.Name, coin.Symbol, coin.PriceUsd,
+			"/api/v1/graph/rsi/"+coin.Id, "/api/v1/graph/sma/"+coin.Id,
+			"/api/v1/graph/ema/"+coin.Id)
 		contents += temp
 	}
 
@@ -97,5 +101,13 @@ func smaHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Coin : %v \n", coin)
 
 	draw := ma.Draw(coin)
+	draw(w, r)
+}
+
+func emaHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+
+	ema := ma.Ema{}
+	draw := ema.Draw()
 	draw(w, r)
 }

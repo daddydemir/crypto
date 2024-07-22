@@ -8,16 +8,19 @@ import (
 	"net/http"
 )
 
+type Sma struct {
+}
+
 var Coin string
 
-func calculate(coin string, period int) []graphs.ChartModel {
+func (s Sma) calculate(coin string, period int) []graphs.ChartModel {
 
 	histories := coincap.HistoryWithId(coin)
 	response := make([]graphs.ChartModel, 0, len(histories)-period)
 	start, end := 0, period
 
 	for end <= len(histories) {
-		average := averagePerDay(histories[start:end])
+		average := s.averagePerDay(histories[start:end])
 
 		item := graphs.ChartModel{
 			Date:  histories[end-1].Date,
@@ -33,7 +36,7 @@ func calculate(coin string, period int) []graphs.ChartModel {
 	return response
 }
 
-func averagePerDay(list []coincap.History) float32 {
+func (s Sma) averagePerDay(list []coincap.History) float32 {
 
 	var totalPrice float32
 	var period int
@@ -54,7 +57,9 @@ func Draw(coin string) func(w http.ResponseWriter, r *http.Request) {
 
 func draw(w http.ResponseWriter, _ *http.Request) {
 
-	list := calculate(Coin, 10)
+	sma := Sma{}
+
+	list := sma.calculate(Coin, 10)
 
 	line := charts.NewLine()
 
