@@ -7,8 +7,9 @@ import (
 )
 
 var (
-	allCoins           = "https://api.coincap.io/v2/assets"
-	priceHistoryWithId = "https://api.coincap.io/v2/assets/%v/history?interval=d1"
+	allCoins             = "https://api.coincap.io/v2/assets"
+	priceHistoryWithId   = "https://api.coincap.io/v2/assets/%v/history?interval=d1"
+	priceHistoryWithTime = "https://api.coincap.io/v2/assets/%v/history?interval=d1&start=%d&end=%d"
 )
 
 func ListCoins() []Coin {
@@ -48,5 +49,23 @@ func HistoryWithId(s string) []History {
 		return nil
 	}
 
+	return data.Data
+}
+
+func HistoryWithTime(s string, start, end int64) []History {
+	var data Data[History]
+	url := fmt.Sprintf(priceHistoryWithTime, s, start/1_000_000, end/1_000_000)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("error: ", err)
+		return nil
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		fmt.Println("error: ", err)
+		return nil
+	}
 	return data.Data
 }

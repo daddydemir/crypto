@@ -5,9 +5,9 @@ import (
 	"github.com/daddydemir/crypto/pkg/model"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
-	"github.com/go-echarts/go-echarts/v2/types"
 	"math"
 	"net/http"
+	"time"
 )
 
 type RSI struct {
@@ -97,47 +97,10 @@ func useCharts(list []model.RsiModel) func(w http.ResponseWriter, r *http.Reques
 func drawChart(w http.ResponseWriter, _ *http.Request) {
 	line := charts.NewLine()
 
-	line.SetGlobalOptions(
-		charts.WithTitleOpts(opts.Title{
-			Title: "RSI",
-		}),
-		charts.WithXAxisOpts(opts.XAxis{
-			Type: "Time",
-		}),
-		charts.WithYAxisOpts(opts.YAxis{
-			Name: "Index",
-		}),
-	)
-
 	dates, values := getDataForCharts(List)
 
-	line.SetGlobalOptions(
-		charts.WithTitleOpts(opts.Title{
-			Title: "RSI",
-		}),
-		charts.WithXAxisOpts(opts.XAxis{
-			SplitNumber: 20,
-		}),
-		charts.WithYAxisOpts(opts.YAxis{
-			Scale: opts.Bool(true),
-		}),
-		charts.WithDataZoomOpts(opts.DataZoom{
-			Type:       "inside",
-			Start:      50,
-			End:        100,
-			XAxisIndex: []int{0},
-		}),
-		charts.WithDataZoomOpts(opts.DataZoom{
-			Type:       "slider",
-			Start:      50,
-			End:        100,
-			XAxisIndex: []int{0},
-		}),
-		charts.WithInitializationOpts(opts.Initialization{
-			Theme: types.ThemeWesteros,
-			//Theme: types.ThemeRoma,
-		}),
-	)
+	line.SetGlobalOptions(GlobalOptions...)
+	line.SetGlobalOptions(GetTitleGlobalOpts("RSI (Relative Strength Index)"))
 
 	line.SetXAxis(dates).AddSeries("tron", generateLineItems(values),
 		charts.WithMarkLineNameYAxisItemOpts(
@@ -173,4 +136,11 @@ func generateLineItems(values []float64) []opts.LineData {
 		items[i] = opts.LineData{Value: v}
 	}
 	return items
+}
+
+func (r RSI) Index(s string) float32 {
+	today := time.Now()
+	history := coincap.HistoryWithTime(s, today.AddDate(0, 0, -15).UnixNano(), today.UnixNano())
+	index := calculateIndex(history)
+	return index.Index
 }

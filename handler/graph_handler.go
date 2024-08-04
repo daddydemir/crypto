@@ -26,10 +26,12 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 					<table class="table table-hover table-striped table-bordered table-resposive" id="coin-table">
 						<thead>
 							<tr>
+								<th> # </th>
 								<th> Name </th>
 								<th> Symbol </th>
 								<th data-sort="price"> Price </th>
 								<th> RSI </th>
+								<th> Index </th>
 								<th> SMA </th>
 								<th> EMA </th>
 							</tr>
@@ -42,36 +44,56 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 		</div>
 	</div>
 	</body>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"> </script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-	<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js" />
-	<script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js" />
+	<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js" > </script>
+	<script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js" > </script>
 	<script>
-		$(document).onload(function() {
-			$('#coin-table').DataTable();
+		$('#coin-table').DataTable({
+			paging: false,
+			searching: false,
 		});
 	</script>
 </html>
 `
 
 	coins := coincap.ListCoins()
+	rsi := graphs.RSI{}
 
 	content := `
-<tr>
+<tr class='%s'>
+	<td> %d </td>
 	<td> %s </td>
 	<td> %s </td>
 	<td> %.3f </td>
 	<td> <a href="%s" target="_blank"> graph </a> </td>
+	<td> %.2f </td>
 	<td> <a href="%s" target="_blank"> graph </a> </td>
 	<td> <a href="%s" target="_blank"> graph </a> </td>
 </tr>
 `
 	var contents string
-	for _, coin := range coins {
+	for i, coin := range coins {
 		temp := content
-		temp = fmt.Sprintf(temp, coin.Name, coin.Symbol, coin.PriceUsd,
-			"/api/v1/graph/rsi/"+coin.Id, "/api/v1/graph/sma/"+coin.Id,
-			"/api/v1/graph/ema/"+coin.Id)
+		var index float32
+		var class string
+		if i <= 20 {
+			index = rsi.Index(coin.Id)
+			if index >= 70 {
+				class = "table-success"
+			} else if index <= 30 {
+				class = "table-danger"
+			} else {
+				class = "table-warning"
+			}
+		}
+
+		temp = fmt.Sprintf(temp, class, i, coin.Name, coin.Symbol, coin.PriceUsd,
+			"/api/v1/graph/rsi/"+coin.Id,
+			index,
+			"/api/v1/graph/sma/"+coin.Id,
+			"/api/v1/graph/ema/"+coin.Id,
+		)
 		contents += temp
 	}
 
