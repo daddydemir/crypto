@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"github.com/daddydemir/crypto/pkg/broker"
+	"github.com/daddydemir/crypto/pkg/broker/rabbit"
 	"time"
 
 	"github.com/daddydemir/crypto/config/database"
@@ -10,7 +12,6 @@ import (
 	"github.com/daddydemir/crypto/pkg/coingecko"
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
-	"github.com/daddydemir/crypto/pkg/rabbitmq"
 )
 
 func GetDailyForGraph() []model.DailyModel {
@@ -92,7 +93,7 @@ func CreateDaily(morning bool) {
 		if result.Error != nil {
 			log.Errorln(result.Error)
 		}
-		CreateMessage()
+		CreateMessage(&rabbit.Publisher{})
 
 		return
 	}
@@ -176,7 +177,7 @@ func CreateWeekly() {
 	// todo
 }
 
-func CreateMessage() {
+func CreateMessage(broker broker.Broker) {
 	var smaller []model.DailyModel
 	var bigger []model.DailyModel
 	var m1, m2, rate, mod string
@@ -194,6 +195,6 @@ func CreateMessage() {
 		mod = fmt.Sprintf("%v", smaller[i].Modulus)
 		m2 += "(" + smaller[i].ExchangeId + ")\t %" + rate + "\t | \t" + mod + "$ \n"
 	}
-	rabbitmq.SendQueue(m1)
-	rabbitmq.SendQueue(m2)
+	broker.SendMessage(m1)
+	broker.SendMessage(m2)
 }

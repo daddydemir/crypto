@@ -15,8 +15,6 @@ func main() {
 	db := database.PostgresDB{}
 	db.Connect()
 
-	config.NewRabbitMQ()
-
 	cronjob.StartCronJob()
 
 	server := &http.Server{
