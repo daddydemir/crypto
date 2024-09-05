@@ -3,6 +3,7 @@ package coincap
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -58,13 +59,14 @@ func HistoryWithTime(s string, start, end int64) []History {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("error: ", err)
+		slog.Error("HistoryWithTime", "error", err)
 		return nil
 	}
+	slog.Info("http get", "url", url, "statusCode", resp.StatusCode)
 
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		fmt.Println("error: ", err)
+		slog.Error("HistoryWithTime json decode ", "error", err, "data", resp.Body)
 		return nil
 	}
 	return data.Data

@@ -6,11 +6,13 @@ import (
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/graphs/ma"
 	"github.com/gorilla/mux"
+	"log/slog"
 	"net/http"
 )
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
+	slog.Info("mainHandler", "url", r.URL)
 
 	html := `
 <html>

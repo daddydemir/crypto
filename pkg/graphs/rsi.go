@@ -5,6 +5,8 @@ import (
 	"github.com/daddydemir/crypto/pkg/model"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"github.com/gorilla/mux"
+	"log/slog"
 	"math"
 	"net/http"
 	"time"
@@ -94,7 +96,10 @@ func useCharts(list []model.RsiModel) func(w http.ResponseWriter, r *http.Reques
 	return drawChart
 }
 
-func drawChart(w http.ResponseWriter, _ *http.Request) {
+func drawChart(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	coin := vars["coin"]
+
 	line := charts.NewLine()
 
 	dates, values := getDataForCharts(List)
@@ -102,7 +107,7 @@ func drawChart(w http.ResponseWriter, _ *http.Request) {
 	line.SetGlobalOptions(GlobalOptions...)
 	line.SetGlobalOptions(GetTitleGlobalOpts("RSI (Relative Strength Index)"))
 
-	line.SetXAxis(dates).AddSeries("tron", generateLineItems(values),
+	line.SetXAxis(dates).AddSeries(coin, generateLineItems(values),
 		charts.WithMarkLineNameYAxisItemOpts(
 			opts.MarkLineNameYAxisItem{Name: "70", ValueDim: "70", YAxis: 70},
 			opts.MarkLineNameYAxisItem{Name: "30", ValueDim: "30", YAxis: 30},
@@ -141,6 +146,11 @@ func generateLineItems(values []float64) []opts.LineData {
 func (r RSI) Index(s string) float32 {
 	today := time.Now()
 	history := coincap.HistoryWithTime(s, today.AddDate(0, 0, -15).UnixNano(), today.UnixNano())
+	slog.Info("RSI Index", "history size", len(history), "coin", s)
+	if len(history) < 14 {
+		slog.Error("history size error", "coin", s, "size", len(history))
+		return -1
+	}
 	index := calculateIndex(history)
 	return index.Index
 }
