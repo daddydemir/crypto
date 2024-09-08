@@ -19,13 +19,15 @@ func ListCoins() []Coin {
 
 	resp, err := http.Get(allCoins)
 	if err != nil {
-		fmt.Println("error:", err)
+		slog.Error("ListCoins:http.Get", "url", allCoins, "err", err)
 		return nil
+	} else {
+		slog.Info("ListCoins:http.Get", "url", allCoins, "statusCode", resp.StatusCode)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		fmt.Println("error: ", err)
+		slog.Error("ListCoins:json.Decode", "err", err)
 		return nil
 	}
 
@@ -40,13 +42,15 @@ func HistoryWithId(s string) []History {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("error: ", err)
+		slog.Error("HistoryWithId:http.Get", "url", url, "err", err)
 		return nil
+	} else {
+		slog.Info("HistoryWithId:http.Get", "url", url, "statusCode", resp.StatusCode)
 	}
 
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		fmt.Println("error: ", err)
+		slog.Error("HistoryWithId:json.Decode", "err", err)
 		return nil
 	}
 
@@ -59,14 +63,15 @@ func HistoryWithTime(s string, start, end int64) []History {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		slog.Error("HistoryWithTime", "error", err)
+		slog.Error("HistoryWithTime:http.Get", "url", url, "err", err)
 		return nil
+	} else {
+		slog.Info("HistoryWithTime:http.Get", "url", url, "statusCode", resp.StatusCode)
 	}
-	slog.Info("http get", "url", url, "statusCode", resp.StatusCode)
 
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		slog.Error("HistoryWithTime json decode ", "error", err, "data", resp.Body)
+		slog.Error("HistoryWithTime:json.Decode", "error", err, "data", resp.Body)
 		return nil
 	}
 	return data.Data

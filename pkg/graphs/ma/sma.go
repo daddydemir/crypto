@@ -1,10 +1,10 @@
 package ma
 
 import (
-	"fmt"
 	"github.com/daddydemir/crypto/pkg/coincap"
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/go-echarts/go-echarts/v2/charts"
+	"log/slog"
 	"net/http"
 )
 
@@ -73,6 +73,6 @@ func draw(w http.ResponseWriter, _ *http.Request) {
 
 	err := line.Render(w)
 	if err != nil {
-		fmt.Printf("render error: %v", err)
+		slog.Error("sma.draw:Render", "err", err)
 	}
 }

@@ -9,6 +9,7 @@ import (
 func Route() http.Handler {
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(setJSONContentType)
+	r.Use(setLogging)
 
 	base := "/api/v1"
 

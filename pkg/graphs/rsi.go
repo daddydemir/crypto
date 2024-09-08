@@ -119,7 +119,7 @@ func drawChart(w http.ResponseWriter, r *http.Request) {
 
 	err := line.Render(w)
 	if err != nil {
-		// todo
+		slog.Error("drawChart:line.Render", "error", err)
 	}
 }
 

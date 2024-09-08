@@ -12,7 +12,6 @@ import (
 
 func mainHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	slog.Info("mainHandler", "url", r.URL)
 
 	html := `
 <html>
@@ -109,7 +108,7 @@ func rsiHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	coin := vars["coin"]
-	fmt.Printf("Coin : %v \n", coin)
+	slog.Info("rsiHandler", "Coin", coin)
 
 	rsi := graphs.RSI{}
 	histories := rsi.Calculate(coin)
@@ -122,7 +121,7 @@ func smaHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	coin := vars["coin"]
-	fmt.Printf("Coin : %v \n", coin)
+	slog.Info("smaHandler", "Coin", coin)
 
 	draw := ma.Draw(coin)
 	draw(w, r)

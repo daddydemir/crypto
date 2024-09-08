@@ -2,18 +2,18 @@ package service
 
 import (
 	"fmt"
-	"github.com/daddydemir/crypto/config/log"
+	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/database/service"
 	"github.com/daddydemir/crypto/pkg/model"
-	"github.com/daddydemir/crypto/pkg/rabbitmq"
+	"log/slog"
 )
 
 var myMap map[string][]model.DailyModel
 
-func RSIGraph() {
+func RSIGraph(broker broker.Broker) {
 	models := service.GetDailyForGraph()
 	prepareData(models)
-	calculateRsiIndex()
+	calculateRsiIndex(broker)
 
 }
 
@@ -35,7 +35,7 @@ func prepareData(models []model.DailyModel) {
 	}
 }
 
-func calculateRsiIndex() {
+func calculateRsiIndex(broker broker.Broker) {
 
 	for key, value := range myMap {
 
@@ -46,7 +46,6 @@ func calculateRsiIndex() {
 			loss float32
 		)
 
-		log.Infoln("starting for : ", key)
 		for i, item := range value {
 
 			if i == 0 {
@@ -54,8 +53,6 @@ func calculateRsiIndex() {
 			}
 
 			data := item.Avg - value[i-1].Avg
-
-			//fmt.Printf("index: %v minus: %v \n", i, data)
 
 			if data > 0 {
 				gain += data
@@ -66,12 +63,15 @@ func calculateRsiIndex() {
 		positiveSum = gain / 14
 		negativeSum = loss / 14 * -1
 		rsiCount := 100 - (100 / (1 + (positiveSum / negativeSum)))
-		log.Infoln("positive avg : %v \nnegative avg : %v \n", positiveSum, negativeSum)
-		log.Infoln("RSI : %.4f", rsiCount)
+		slog.Info("service.calculateRsiIndex", "positiveSum", positiveSum, "negativeSum", negativeSum)
+		slog.Info("service.calculateRsiIndex", "Coin", key, "rsiCount", rsiCount)
 
 		if rsiCount <= 30 || rsiCount >= 70 {
-			log.Infoln("RSI Index: %v", rsiCount)
-			rabbitmq.SendQueue(fmt.Sprintf("(14) coin : %v rsi: %v", key, rsiCount))
+			slog.Info("service.calculateRsiIndex -> important", "Coin", key, "rsiCount", rsiCount)
+			err := broker.SendMessage(fmt.Sprintf("(14) coin: %v rsi: %v ", key, rsiCount))
+			if err != nil {
+				slog.Error("calculateRsiIndex:broker.SendMessage", "err", err)
+			}
 		}
 	}
 }

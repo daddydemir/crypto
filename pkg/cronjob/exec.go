@@ -1,10 +1,11 @@
 package cronjob
 
 import (
-	"github.com/daddydemir/crypto/config/log"
+	"github.com/daddydemir/crypto/pkg/broker/rabbit"
 	db "github.com/daddydemir/crypto/pkg/database/service"
 	service "github.com/daddydemir/crypto/pkg/service"
 	"github.com/robfig/cron/v3"
+	"log/slog"
 	"time"
 )
 
@@ -46,14 +47,14 @@ func rsiCheck(task *cron.Cron) {
 	spec := "30 10,15 * * *"
 
 	entryId, err := task.AddFunc(spec, func() {
-		service.RSIGraph()
+		service.RSIGraph(&rabbit.Publisher{})
 	})
 	printLog(entryId, err, "rsiCheck cron ID : ")
 }
 
 func printLog(entryID cron.EntryID, err error, message string) {
 	if err != nil {
-		log.Errorln("Error creating cron :  ", err)
+		slog.Error("printLog", "err", err, "message", message)
 	}
-	log.Infoln(message, entryID)
+	slog.Info("printLog", "entryID", entryID, "message", message)
 }

@@ -54,8 +54,14 @@ func (e Ema) draw(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	coin := vars["coin"]
 
-	list := e.calculate(coin, 3)
-	_, values := graphs.PrepareData(list)
+	list7 := e.calculate(coin, 7)
+	list25 := e.calculate(coin, 25)
+	list99 := e.calculate(coin, 99)
+
+	_, values7 := graphs.PrepareData(list7)
+	_, values25 := graphs.PrepareData(list25)
+	_, values99 := graphs.PrepareData(list99)
+
 	histories := coincap.HistoryWithId(coin)
 	dates, datas := graphs.PrepareDataWithHistory(histories)
 
@@ -64,7 +70,9 @@ func (e Ema) draw(w http.ResponseWriter, r *http.Request) {
 	line.SetGlobalOptions(graphs.GetTitleGlobalOpts("EMA (Exponential Moving Average)"))
 
 	line.SetXAxis(dates).
-		AddSeries(coin, values, graphs.SeriesOptions...).
+		AddSeries("7", values7).
+		AddSeries("25", values25).
+		AddSeries("99", values99).
 		AddSeries("original", datas)
 
 	err := line.Render(w)

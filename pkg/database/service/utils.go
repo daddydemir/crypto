@@ -7,15 +7,10 @@ import (
 )
 
 func getWeek() (string, string) {
-	// Bugünün tarihini almak
 	today := time.Now()
 
-	// Bu haftanın başlangıcı ve bitişini belirlemek
 	weekStart := today.AddDate(0, 0, int(time.Monday-today.Weekday()))
 	weekEnd := weekStart.AddDate(0, 0, 6)
-
-	//fmt.Println("Bu haftanın başlangıcı:", weekStart.Format("2006-01-02"))
-	//fmt.Println("Bu haftanın bitişi:", weekEnd.Format("2006-01-02"))
 
 	return time2string(weekStart), time2string(weekEnd)
 }

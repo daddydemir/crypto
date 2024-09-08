@@ -5,6 +5,6 @@ import (
 	"net/http"
 )
 
-func getWeekly(w http.ResponseWriter, r *http.Request) {
+func getWeekly(_ http.ResponseWriter, _ *http.Request) {
 	service.CreateWeekly()
 }

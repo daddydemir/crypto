@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/broker/rabbit"
+	"log/slog"
 	"time"
 
 	"github.com/daddydemir/crypto/config/database"
-	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/pkg/adapter"
 	"github.com/daddydemir/crypto/pkg/coingecko"
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
 )
+
+// todo:  database ile ilgisi olmayan islerin buradan kaldirilmasi lazim
 
 func GetDailyForGraph() []model.DailyModel {
 	var dailies []model.DailyModel
@@ -43,7 +45,7 @@ func CreateDaily(morning bool) {
 	var adapts []adapter.Adapter
 	adapts = coingecko.GetTopHundred()
 	if len(adapts) == 0 {
-		log.LOG.Warn("coingecko GetTopHundred list is empty")
+		slog.Error("CreateDaily:coingecko.GetTopHundred", "message", "list is empty")
 		return
 	}
 	var dailies []model.DailyModel
@@ -55,7 +57,7 @@ func CreateDaily(morning bool) {
 		gecko := make(map[string]model.DailyModel)
 		dailyFromDb := GetDailyFromDatabase()
 		if len(dailyFromDb) == 0 {
-			log.LOG.Warn("database getDalyFromDb list is empty")
+			slog.Error("CreateDaily:GetDailyFromDatabase", "message", "list is empty")
 			return
 		}
 		var save []model.DailyModel
@@ -91,7 +93,7 @@ func CreateDaily(morning bool) {
 
 		result := database.D.Save(&save)
 		if result.Error != nil {
-			log.Errorln(result.Error)
+			slog.Error("CreateDaily:result.Save", "message", result.Error)
 		}
 		CreateMessage(&rabbit.Publisher{})
 
@@ -106,10 +108,10 @@ func GetDaily() []model.DailyModel {
 	adapts = coingecko.GetTopHundred()
 
 	if len(adapts) == 0 {
-		log.LOG.Warn("No adapter found")
+		slog.Error("GetDaily:coingecko.GetTopHundred", "message", "list is empty")
 		return nil
 	} else {
-		log.LOG.Warn(adapts)
+		slog.Info("GetDaily:coingecko.GetTopHundred", "list", adapts)
 	}
 
 	var dailies []model.DailyModel
@@ -136,7 +138,7 @@ func GetExchange() []model.ExchangeModel {
 	adapts = coingecko.GetTopHundred()
 
 	if len(adapts) == 0 {
-		log.LOG.Warn("No adapters found")
+		slog.Error("GetExchange:coingecko.GetTopHundred", "message", "list is empty")
 		return nil
 	}
 
@@ -152,7 +154,7 @@ func CreateExchange() {
 	adapts = coingecko.GetTopHundred()
 
 	if len(adapts) == 0 {
-		log.LOG.Warn("No adapts found")
+		slog.Error("CreateExchange:coingecko.GetTopHundred", "message", "list is empty")
 		return
 	}
 
@@ -174,7 +176,6 @@ func CreateWeekly() {
 	weekStart, weekEnd := getWeek()
 
 	database.D.Where("date between ? and ? ", weekStart, weekEnd).Find(&dailies)
-	// todo
 }
 
 func CreateMessage(broker broker.Broker) {

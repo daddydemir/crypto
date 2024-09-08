@@ -2,27 +2,27 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/daddydemir/crypto/config/log"
 	"github.com/daddydemir/crypto/pkg/database/service"
+	"log/slog"
 	"net/http"
 )
 
-func getExchange(w http.ResponseWriter, r *http.Request) {
+func getExchange(w http.ResponseWriter, _ *http.Request) {
 	err := json.NewEncoder(w).Encode(service.GetExchange())
 	if err != nil {
-		log.Errorln("::getExchange:: err:{}", err)
+		slog.Error("getExchange:json.Encode", "error", err)
 	}
 }
 
-func getExchangeFromDb(w http.ResponseWriter, r *http.Request) {
+func getExchangeFromDb(w http.ResponseWriter, _ *http.Request) {
 	response := service.GetExchangeFromDb()
-	log.Infoln("::getExchangeFromDb:: response:{}", response)
+	slog.Info("getExchangeFromDb:service.GetExchangeFromDb", "response", response)
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		log.Errorln("::getExchangeFromDb:: err:{}", err)
+		slog.Error("getExchangeFromDb:json.Encode", "error", err)
 	}
 }
 
-func createExchange(w http.ResponseWriter, r *http.Request) {
+func createExchange(_ http.ResponseWriter, _ *http.Request) {
 	service.CreateExchange()
 }

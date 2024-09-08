@@ -2,10 +2,10 @@ package rabbit
 
 import (
 	"context"
-	"fmt"
 	"github.com/daddydemir/crypto/config"
 	"github.com/daddydemir/crypto/config/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"log/slog"
 )
 
 type Publisher struct{}
@@ -29,7 +29,6 @@ func (r *Publisher) SendMessage(message string) error {
 	return err
 }
 
-// todo burada yanlislik olabilir | her defasinda bunu declare etmeye gerek olmayabilir...
 func getQueue(queueName string) amqp.Queue {
 	channel := broker.GetChannel()
 
@@ -43,7 +42,7 @@ func getQueue(queueName string) amqp.Queue {
 	)
 
 	if err != nil {
-		fmt.Println("Failed to declare a RabbitMQ queue", err)
+		slog.Error("QueueDeclare", "error", err)
 	}
 
 	return queue

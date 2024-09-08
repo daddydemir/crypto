@@ -2,23 +2,23 @@ package database
 
 import (
 	"github.com/daddydemir/crypto/config"
-	"github.com/daddydemir/crypto/config/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log/slog"
 )
 
 type PostgresDB struct {
 }
 
 func (d *PostgresDB) Connect() {
-	dsn := config.Get("POSTGRE_DSN") // todo: unresolved!c
+	dsn := config.Get("POSTGRE_DSN")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Database connection error: ", err)
+		slog.Error("Connect:gorm.Open", "error", err)
+		panic(err)
 	}
 	D = db
-	log.Infoln("Connected to database")
-
+	slog.Info("Connect:gorm.Open", "message", "connection was successful")
 }
 
 func (d *PostgresDB) Close() {

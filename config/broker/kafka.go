@@ -13,7 +13,6 @@ func StartKafkaConnection() {
 
 func GetWriter() *kafka.Writer {
 
-	// todo: check writer is active?
 	if writer == nil {
 		writer = &kafka.Writer{
 			Addr:  kafka.TCP(config.Get("KAFKA_URL")),
