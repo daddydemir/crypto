@@ -5,6 +5,7 @@ import (
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/graphs/ma"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
+	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
@@ -106,14 +107,11 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 func rsiHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	vars := mux.Vars(r)
-
 	coin := vars["coin"]
-	slog.Info("rsiHandler", "Coin", coin)
 
-	rsi := graphs.RSI{}
-	histories := rsi.Calculate(coin)
-	draw := rsi.Draw(histories)
-	draw(w, r)
+	graphicService := service.NewRsiService(coin)
+	function := graphicService.Draw()
+	function(w, r)
 }
 
 func smaHandler(w http.ResponseWriter, r *http.Request) {

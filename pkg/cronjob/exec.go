@@ -1,9 +1,7 @@
 package cronjob
 
 import (
-	"github.com/daddydemir/crypto/pkg/broker/rabbit"
 	db "github.com/daddydemir/crypto/pkg/database/service"
-	service "github.com/daddydemir/crypto/pkg/service"
 	"github.com/robfig/cron/v3"
 	"log/slog"
 	"time"
@@ -47,7 +45,8 @@ func rsiCheck(task *cron.Cron) {
 	spec := "30 10,15 * * *"
 
 	entryId, err := task.AddFunc(spec, func() {
-		service.RSIGraph(&rabbit.Publisher{})
+		// todo:
+		//	service.RSIGraph(&rabbit.Publisher{})
 	})
 	printLog(entryId, err, "rsiCheck cron ID : ")
 }

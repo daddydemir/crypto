@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/daddydemir/crypto/config"
 	"github.com/daddydemir/crypto/config/database"
-	"github.com/daddydemir/crypto/config/log/dlog"
+	_ "github.com/daddydemir/crypto/config/log/dlog"
 	"github.com/daddydemir/crypto/handler"
 	"github.com/daddydemir/crypto/pkg/cronjob"
 	"log/slog"
@@ -11,8 +11,6 @@ import (
 )
 
 func main() {
-
-	dlog.Info("Service is up")
 
 	db := database.PostgresDB{}
 	db.Connect()

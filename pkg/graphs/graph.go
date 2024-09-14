@@ -6,9 +6,9 @@ import (
 )
 
 type Graph interface {
-	Calculate(coin string, period int) []ChartModel
-	Draw() func(w http.ResponseWriter, r *http.Request)
-	Index(coin string) float32
+	Calculate() []ChartModel
+	Draw(list []ChartModel) func(w http.ResponseWriter, r *http.Request)
+	Index() float32
 }
 
 type ChartModel struct {
