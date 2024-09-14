@@ -71,7 +71,7 @@ func (r *RedisCache) Get(key string) (any, error) {
 	return result, response.Err()
 }
 
-func (r *RedisCache) GetList(key string, list any) error {
+func (r *RedisCache) GetList(key string, list any, start, end int64) error {
 
 	v := reflect.ValueOf(list)
 	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Slice {
@@ -81,7 +81,7 @@ func (r *RedisCache) GetList(key string, list any) error {
 	slices := v.Elem()
 	elemType := slices.Type().Elem()
 
-	result, err := r.client.LRange(context.Background(), key, 0, -1).Result()
+	result, err := r.client.LRange(context.Background(), key, start, end).Result()
 	if err != nil {
 		slog.Error("GetList:client.LRange", "error", err)
 		return err
