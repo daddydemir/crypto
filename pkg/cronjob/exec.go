@@ -15,7 +15,7 @@ func StartCronJob() {
 
 	dailyStart(c)
 	dailyEnd(c)
-	rsiCheck(c)
+	//rsiCheck(c)
 
 	c.Start()
 }
