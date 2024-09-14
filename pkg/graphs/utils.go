@@ -1,7 +1,7 @@
 package graphs
 
 import (
-	"github.com/daddydemir/crypto/pkg/coincap"
+	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/go-echarts/go-echarts/v2/types"

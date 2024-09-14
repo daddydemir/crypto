@@ -1,8 +1,8 @@
 package graphs
 
 import (
-	"github.com/daddydemir/crypto/pkg/coincap"
 	"github.com/daddydemir/crypto/pkg/model"
+	coincap2 "github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/gorilla/mux"
@@ -17,7 +17,7 @@ type RSI struct {
 }
 
 func (r RSI) Calculate(s string) []model.RsiModel {
-	history := coincap.HistoryWithId(s)
+	history := coincap2.HistoryWithId(s)
 	response := make([]model.RsiModel, 0)
 
 	start, end := 0, 14
@@ -32,7 +32,7 @@ func (r RSI) Calculate(s string) []model.RsiModel {
 	return response
 }
 
-func calculateIndex(list []coincap.History) model.RsiModel {
+func calculateIndex(list []coincap2.History) model.RsiModel {
 
 	response := new(model.RsiModel)
 	period := 14
@@ -145,7 +145,7 @@ func generateLineItems(values []float64) []opts.LineData {
 
 func (r RSI) Index(s string) float32 {
 	today := time.Now()
-	history := coincap.HistoryWithTime(s, today.AddDate(0, 0, -15).UnixNano(), today.UnixNano())
+	history := coincap2.HistoryWithTime(s, today.AddDate(0, 0, -15).UnixNano(), today.UnixNano())
 	slog.Info("RSI Index", "history size", len(history), "coin", s)
 	if len(history) < 14 {
 		slog.Error("history size error", "coin", s, "size", len(history))

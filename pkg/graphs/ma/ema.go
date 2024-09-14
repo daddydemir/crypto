@@ -2,8 +2,8 @@ package ma
 
 import (
 	"fmt"
-	"github.com/daddydemir/crypto/pkg/coincap"
 	"github.com/daddydemir/crypto/pkg/graphs"
+	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/gorilla/mux"
 	"net/http"

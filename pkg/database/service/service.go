@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/broker/rabbit"
+	"github.com/daddydemir/crypto/pkg/remote/coingecko"
 	"log/slog"
 	"time"
 
 	"github.com/daddydemir/crypto/config/database"
 	"github.com/daddydemir/crypto/pkg/adapter"
-	"github.com/daddydemir/crypto/pkg/coingecko"
 	"github.com/daddydemir/crypto/pkg/dao"
 	"github.com/daddydemir/crypto/pkg/model"
 )

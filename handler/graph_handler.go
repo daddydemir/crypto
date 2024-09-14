@@ -2,9 +2,9 @@ package handler
 
 import (
 	"fmt"
-	"github.com/daddydemir/crypto/pkg/coincap"
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/graphs/ma"
+	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"

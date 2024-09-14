@@ -1,8 +1,8 @@
 package ma
 
 import (
-	"github.com/daddydemir/crypto/pkg/coincap"
 	"github.com/daddydemir/crypto/pkg/graphs"
+	coincap2 "github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"log/slog"
 	"net/http"
@@ -15,7 +15,7 @@ var Coin string
 
 func (s Sma) calculate(coin string, period int) []graphs.ChartModel {
 
-	histories := coincap.HistoryWithId(coin)
+	histories := coincap2.HistoryWithId(coin)
 	response := make([]graphs.ChartModel, 0, len(histories)-period)
 	start, end := 0, period
 
@@ -36,7 +36,7 @@ func (s Sma) calculate(coin string, period int) []graphs.ChartModel {
 	return response
 }
 
-func (s Sma) averagePerDay(list []coincap.History) float32 {
+func (s Sma) averagePerDay(list []coincap2.History) float32 {
 
 	var totalPrice float32
 	var period int
