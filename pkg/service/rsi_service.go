@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/graphs/rsi"
 	"log/slog"
@@ -9,11 +11,13 @@ import (
 
 type rsiService struct {
 	graphic graphs.Graph
+	broker  broker.Broker
 }
 
 func NewRsiService(name string) *rsiService {
 	return &rsiService{
 		rsi.NewRsi(name),
+		broker.GetBrokerService(),
 	}
 }
 
@@ -27,4 +31,15 @@ func (r *rsiService) Draw() func(w http.ResponseWriter, r *http.Request) {
 
 	draw := r.graphic.Draw(list)
 	return draw
+}
+
+func (r *rsiService) CalculateIndex() {
+	index := r.graphic.Index()
+
+	if index < 30 || index > 70 {
+		err := r.broker.SendMessage(fmt.Sprintf("RSI index %2.f", index))
+		if err != nil {
+			slog.Error("CalculateIndex:broker.SendMessage", "error", err)
+		}
+	}
 }

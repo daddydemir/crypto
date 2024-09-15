@@ -8,8 +8,8 @@ import (
 
 func ChartModel2lineData(list []graphs.ChartModel) ([]string, []opts.LineData) {
 
-	dates := make([]string, len(list))
-	data := make([]opts.LineData, len(list))
+	dates := make([]string, 0, len(list))
+	data := make([]opts.LineData, 0, len(list))
 
 	for _, chart := range list {
 		dates = append(dates, chart.Date.Format("2006-01-02"))

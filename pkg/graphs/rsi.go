@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// todo: mainHandler called this code...
 type RSI struct {
 	model.RsiModel
 }
