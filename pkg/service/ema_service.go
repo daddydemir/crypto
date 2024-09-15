@@ -7,24 +7,24 @@ import (
 	"net/http"
 )
 
-type smaService struct {
+type emaService struct {
 	graphic graphs.Graph
 }
 
-func NewSmaService(name string, period int) *smaService {
-	return &smaService{
-		ma.NewSma(name, period),
+func NewEmaService(name string, period int) *emaService {
+	return &emaService{
+		ma.NewEma(name, period),
 	}
 }
 
-func (m *smaService) Draw() func(w http.ResponseWriter, r *http.Request) {
-	list := m.graphic.Calculate()
+func (e *emaService) Draw() func(w http.ResponseWriter, r *http.Request) {
+	list := e.graphic.Calculate()
 
 	if len(list) == 0 {
 		slog.Error("Draw:graphic.Calculate", "error", "list is empty")
 		return nil
 	}
 
-	draw := m.graphic.Draw(list)
+	draw := e.graphic.Draw(list)
 	return draw
 }

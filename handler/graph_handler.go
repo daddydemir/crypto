@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/daddydemir/crypto/pkg/graphs"
-	"github.com/daddydemir/crypto/pkg/graphs/ma"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/gorilla/mux"
@@ -118,15 +117,19 @@ func smaHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	coin := vars["coin"]
 
-	graphicService := service.NewSmaService(coin)
+	graphicService := service.NewSmaService(coin, 10)
 	function := graphicService.Draw()
 	function(w, r)
 }
 
 func emaHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
+	vars := mux.Vars(r)
+	coin := vars["coin"]
 
-	ema := ma.Ema{}
-	draw := ema.Draw()
-	draw(w, r)
+	graphicService := service.NewEmaService(coin, 25)
+	function := graphicService.Draw()
+	function(w, r)
 }
+
+// todo! i need useful EMA graph...

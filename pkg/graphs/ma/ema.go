@@ -2,81 +2,72 @@ package ma
 
 import (
 	"fmt"
+	"github.com/daddydemir/crypto/pkg/cache"
+	localCharts "github.com/daddydemir/crypto/pkg/charts"
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
-	"github.com/go-echarts/go-echarts/v2/charts"
-	"github.com/gorilla/mux"
+	"log/slog"
 	"net/http"
 )
 
-type Ema struct{}
+type ema struct {
+	name         string
+	period       int
+	smoothing    float32
+	cacheService cache.Cache
+}
 
-func (e Ema) calculate(coin string, period int) []graphs.ChartModel {
+func NewEma(name string, period int) *ema {
+	return &ema{
+		name:         name,
+		period:       period,
+		smoothing:    2 / float32(1+period),
+		cacheService: cache.GetCacheService(),
+	}
+}
 
-	histories := coincap.HistoryWithId(coin)
-	response := make([]graphs.ChartModel, len(histories), len(histories))
+func (e *ema) Index() float32 {
+	panic("invalid method")
+}
 
-	sma := Sma{}
-	firstPoint := sma.averagePerDay(histories[:period])
-	factor := e.smoothingFactor(period)
-	prev := firstPoint
-
-	firstDay := graphs.ChartModel{
-		Date:  histories[period-1].Date,
-		Value: firstPoint,
+func (e *ema) Calculate() []graphs.ChartModel {
+	list := make([]coincap.History, 0)
+	err := e.cacheService.GetList(e.name, &list, 0, -1)
+	if err != nil {
+		slog.Error("Calculate:cacheService.GetLis", "coin", e.name, "error", err)
+		return nil
 	}
 
-	response[period-1] = firstDay
+	response := make([]graphs.ChartModel, len(list), len(list))
 
-	for i := period; i < len(histories); i++ {
-		val := (histories[i].PriceUsd-prev)*factor + prev
-		prev = val
+	s := NewSma(e.name, e.period)
+	prev := s.createAvg(list[:e.period])
+	response[e.period] = graphs.ChartModel{
+		Value: prev,
+		Date:  list[e.period].Date,
+	}
 
+	for i := e.period + 1; i < len(list); i++ {
 		response[i] = graphs.ChartModel{
-			Date:  histories[i].Date,
-			Value: val,
+			Date:  list[i].Date,
+			Value: (list[i].PriceUsd-prev)*e.smoothing + prev,
 		}
+		prev = response[i].Value
 	}
 
 	return response
 }
 
-func (e Ema) smoothingFactor(period int) float32 {
-	return 2 / float32(period+1)
-}
+func (e *ema) Draw(list []graphs.ChartModel) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		chart := localCharts.CreateLineChart("EMA (Exponential Moving Average)")
+		dates, data := localCharts.ChartModel2lineData(list)
 
-func (e Ema) Draw() func(w http.ResponseWriter, r *http.Request) {
-	return e.draw
-}
+		chart.SetXAxis(dates).AddSeries(fmt.Sprintf("%v", e.period), data)
 
-func (e Ema) draw(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	coin := vars["coin"]
-
-	list7 := e.calculate(coin, 7)
-	list25 := e.calculate(coin, 25)
-	list99 := e.calculate(coin, 99)
-
-	_, values7 := graphs.PrepareData(list7)
-	_, values25 := graphs.PrepareData(list25)
-	_, values99 := graphs.PrepareData(list99)
-
-	histories := coincap.HistoryWithId(coin)
-	dates, datas := graphs.PrepareDataWithHistory(histories)
-
-	line := charts.NewLine()
-	line.SetGlobalOptions(graphs.GlobalOptions...)
-	line.SetGlobalOptions(graphs.GetTitleGlobalOpts("EMA (Exponential Moving Average)"))
-
-	line.SetXAxis(dates).
-		AddSeries("7", values7).
-		AddSeries("25", values25).
-		AddSeries("99", values99).
-		AddSeries("original", datas)
-
-	err := line.Render(w)
-	if err != nil {
-		fmt.Printf("render err: %v\n", err)
+		err := chart.Render(w)
+		if err != nil {
+			slog.Error("Draw:chart.Render", "error", err)
+		}
 	}
 }

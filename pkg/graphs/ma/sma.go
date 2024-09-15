@@ -15,10 +15,10 @@ type sma struct {
 	cacheService cache.Cache
 }
 
-func NewSma(name string) *sma {
+func NewSma(name string, period int) *sma {
 	return &sma{
 		name:         name,
-		period:       10,
+		period:       period,
 		cacheService: cache.GetCacheService(),
 	}
 }
