@@ -5,7 +5,7 @@ import (
 	"github.com/daddydemir/crypto/config/database"
 	_ "github.com/daddydemir/crypto/config/log/dlog"
 	"github.com/daddydemir/crypto/handler"
-	"github.com/daddydemir/crypto/pkg/cronjob"
+	_ "github.com/daddydemir/crypto/pkg/cronjob"
 	"log/slog"
 	"net/http"
 )
@@ -14,8 +14,6 @@ func main() {
 
 	db := database.PostgresDB{}
 	db.Connect()
-
-	cronjob.StartCronJob()
 
 	server := &http.Server{
 		Addr:    config.Get("PORT"),

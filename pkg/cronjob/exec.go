@@ -2,18 +2,19 @@ package cronjob
 
 import (
 	db "github.com/daddydemir/crypto/pkg/database/service"
+	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/robfig/cron/v3"
 	"log/slog"
 	"time"
 )
 
-func StartCronJob() {
+func init() {
 	location, _ := time.LoadLocation("Turkey")
 	c := cron.New(cron.WithLocation(location))
 
 	dailyStart(c)
 	dailyEnd(c)
-	//rsiCheck(c)
+	validateCache(c)
 
 	c.Start()
 }
@@ -49,6 +50,15 @@ func rsiCheck(task *cron.Cron) {
 		//	service.RSIGraph(&rabbit.Publisher{})
 	})
 	printLog(entryId, err, "rsiCheck cron ID : ")
+}
+
+func validateCache(task *cron.Cron) {
+	spec := "30 00 * * *"
+
+	entryID, err := task.AddFunc(spec, func() {
+		service.Validate()
+	})
+	printLog(entryID, err, "validateCache cron ID : ")
 }
 
 func printLog(entryID cron.EntryID, err error, message string) {
