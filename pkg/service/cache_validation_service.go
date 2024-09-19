@@ -31,7 +31,7 @@ func Validate() {
 
 	for _, i := range coins {
 		array := make([]coincap.History, 0, 1)
-		err = cacheService.GetList(i.Id, &data, -1, -1)
+		err = cacheService.GetList(i.Id, &array, -1, -1)
 		if err != nil {
 			slog.Error("Validate:cacheService.GetList", "coin", i.Id, "error", err)
 			continue
