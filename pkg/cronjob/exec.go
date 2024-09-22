@@ -53,12 +53,20 @@ func rsiCheck(task *cron.Cron) {
 }
 
 func validateCache(task *cron.Cron) {
-	spec := "30 00 * * *"
+	spec := "30 04 * * *"
 
 	entryID, err := task.AddFunc(spec, func() {
 		service.Validate()
 	})
 	printLog(entryID, err, "validateCache cron ID : ")
+}
+
+func checkAll(task *cron.Cron) {
+	spec := "30 05 * * *"
+	task.AddFunc(spec, func() {
+		maService := service.NewMaService()
+		maService.CheckAll(7, 25, 99)
+	})
 }
 
 func printLog(entryID cron.EntryID, err error, message string) {
