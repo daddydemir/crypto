@@ -15,6 +15,7 @@ func init() {
 	dailyStart(c)
 	dailyEnd(c)
 	validateCache(c)
+	checkAll(c)
 
 	c.Start()
 }
