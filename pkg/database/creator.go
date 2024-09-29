@@ -12,6 +12,7 @@ func CreateTables() {
 		model.DailyModel{},
 		model.ExchangeModel{},
 		model.WeeklyModel{},
+		model.SignalModel{},
 	)
 	if err != nil {
 		slog.Error("CreateTables.AutoMigrate", "error", err)

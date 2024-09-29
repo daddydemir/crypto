@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
+	"github.com/daddydemir/crypto/pkg/database/service"
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/graphs/ma"
 	"github.com/daddydemir/crypto/pkg/graphs/rsi"
+	"github.com/daddydemir/crypto/pkg/model"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
+	"github.com/google/uuid"
 	"log/slog"
+	"time"
 )
 
 type maService struct {
@@ -62,7 +66,7 @@ func (m *maService) CheckWithId(coin string, short, middle, long int) {
 }
 
 func (m *maService) CheckAll(short, middle, long int) {
-
+	signals := make([]model.SignalModel, 0)
 	coins := m.getCoins()
 
 	for _, coin := range coins {
@@ -74,15 +78,14 @@ func (m *maService) CheckAll(short, middle, long int) {
 
 		if shortItem.Date == middleItem.Date && middleItem.Date == longItem.Date {
 			r := result(shortItem.Value, middleItem.Value, longItem.Value)
+			rsiService := rsi.NewRsi(coin.Id)
+			rsiIndex := rsiService.Index()
+			signals = append(signals, m.createSignalModel(coin.Id, r, shortItem.Value, middleItem.Value, longItem.Value, rsiIndex))
 			if r == "7 > 25 > 99" {
-				rsiService := rsi.NewRsi(coin.Id)
-				rsiIndex := rsiService.Index()
 				message := fmt.Sprintf("Alim Sinyali olabilir: %v , rsi: %0.f \n", coin.Id, rsiIndex)
 				slog.Info("CheckAll", "message", message)
 				m.Broker.SendMessage(message)
 			} else if r == "99 > 25 > 7" {
-				rsiService := rsi.NewRsi(coin.Id)
-				rsiIndex := rsiService.Index()
 				message := fmt.Sprintf("Satis sinyali olabilir: %v , rsi: %0.f \n", coin.Id, rsiIndex)
 				slog.Info("CheckAll", "message", message)
 				m.Broker.SendMessage(message)
@@ -93,6 +96,7 @@ func (m *maService) CheckAll(short, middle, long int) {
 			slog.Error("CheckAll", "coin", coin.Id, "message", "invalid data")
 		}
 	}
+	service.SaveSignals(signals)
 }
 
 func result(short, middle, long float32) string {
@@ -165,4 +169,17 @@ func (m *maService) calculateMaItems(coin string, short, middle, long int) (shor
 	middleItem = middleList[len(middleList)-1]
 	longItem = longList[len(longList)-1]
 	return
+}
+
+func (m *maService) createSignalModel(coin, result string, short, midd, long, rsi float32) model.SignalModel {
+	return model.SignalModel{
+		ID:         uuid.New(),
+		ExchangeId: coin,
+		CreateDate: time.Now(),
+		Short:      short,
+		Middle:     midd,
+		Long:       long,
+		Rsi:        rsi,
+		Result:     result,
+	}
 }

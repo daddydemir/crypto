@@ -199,3 +199,7 @@ func CreateMessage(broker broker.Broker) {
 	broker.SendMessage(m1)
 	broker.SendMessage(m2)
 }
+
+func SaveSignals(signalModel []model.SignalModel) {
+	database.D.Save(&signalModel)
+}
