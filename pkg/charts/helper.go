@@ -24,3 +24,9 @@ func getTitleGlobalOpts(title string) charts.GlobalOpts {
 		Title: title,
 	})
 }
+
+func GetLineStyle(color string) charts.SeriesOpts {
+	return charts.WithLineStyleOpts(opts.LineStyle{
+		Color: color,
+	})
+}
