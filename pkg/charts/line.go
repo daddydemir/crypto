@@ -14,6 +14,7 @@ func newCustomLineChart() *charts.Line {
 func CreateLineChart(title string) *charts.Line {
 	lineChart := newCustomLineChart()
 	lineChart.SetGlobalOptions(getTitleGlobalOpts(title))
+	lineChart.SetGlobalOptions(GlobalOptions...)
 
 	return lineChart
 }

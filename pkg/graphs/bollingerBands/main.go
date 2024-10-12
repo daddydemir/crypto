@@ -82,23 +82,11 @@ func (b *bollingerBands) Draw(list []graphs.ChartModel) func(w http.ResponseWrit
 		_, uppers := localCharts.ChartModel2lineData(upperBand)
 		_, lowers := localCharts.ChartModel2lineData(lowerBand)
 		_, origin := localCharts.ChartModel2lineData(original)
-		chart.SetXAxis(dates).AddSeries(
-			b.name+"-low",
-			lowers,
-			localCharts.GetLineStyle("blue"),
-		).AddSeries(
-			b.name+"-midd",
-			data,
-			localCharts.GetLineStyle("purple"),
-		).AddSeries(
-			b.name+"-up",
-			uppers,
-			localCharts.GetLineStyle("red"),
-		).AddSeries(
-			b.name,
-			origin,
-			localCharts.GetLineStyle("green"),
-		)
+		chart.SetXAxis(dates).
+			AddSeries("low", lowers).
+			AddSeries("middle", data).
+			AddSeries("up", uppers).
+			AddSeries(b.name, origin)
 
 		err := chart.Render(w)
 		upperBand = nil

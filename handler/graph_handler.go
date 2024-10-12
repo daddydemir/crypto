@@ -3,6 +3,8 @@ package handler
 import (
 	"fmt"
 	"github.com/daddydemir/crypto/pkg/graphs"
+	"github.com/daddydemir/crypto/pkg/graphs/bollingerBands"
+	"github.com/daddydemir/crypto/pkg/graphs/ma"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/gorilla/mux"
@@ -34,6 +36,8 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 								<th> Index </th>
 								<th> SMA </th>
 								<th> EMA </th>
+								<th> MA </th>
+								<th> Bollinger Bands </th>
 							</tr>
 						</thead>
 						<tbody>
@@ -70,6 +74,8 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 	<td> %.2f </td>
 	<td> <a href="%s" target="_blank"> graph </a> </td>
 	<td> <a href="%s" target="_blank"> graph </a> </td>
+	<td> <a href="%s" target="_blank"> graph </a> </td>
+	<td> <a href="%s" target="_blank"> graph </a> </td>
 </tr>
 `
 	var contents string
@@ -93,6 +99,8 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 			index,
 			"/api/v1/graph/sma/"+coin.Id,
 			"/api/v1/graph/ema/"+coin.Id,
+			"/api/v1/graph/ma/"+coin.Id,
+			"/api/v1/graph/bollingerBands/"+coin.Id,
 		)
 		contents += temp
 	}
@@ -132,4 +140,26 @@ func emaHandler(w http.ResponseWriter, r *http.Request) {
 	function(w, r)
 }
 
-// todo! i need useful EMA graph...
+func maHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	vars := mux.Vars(r)
+	coin := vars["coin"]
+	newMa := ma.NewMa(coin, 0)
+
+	draw := newMa.Draw(newMa.Calculate())
+	draw(w, r)
+}
+
+func bollingerBandsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	vars := mux.Vars(r)
+	coin := vars["coin"]
+
+	bands := bollingerBands.NewBollingerBands(coin, 20)
+	list := bands.Calculate()
+
+	function := bands.Draw(list)
+
+	function(w, r)
+
+}

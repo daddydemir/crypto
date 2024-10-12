@@ -17,6 +17,8 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/graph/rsi/{coin}", rsiHandler).Methods(http.MethodGet)
 	subRouter.HandleFunc("/graph/sma/{coin}", smaHandler).Methods(http.MethodGet)
 	subRouter.HandleFunc("/graph/ema/{coin}", emaHandler).Methods(http.MethodGet)
+	subRouter.HandleFunc("/graph/ma/{coin}", maHandler).Methods(http.MethodGet)
+	subRouter.HandleFunc("/graph/bollingerBands/{coin}", bollingerBandsHandler).Methods(http.MethodGet)
 	subRouter.HandleFunc("/graph/main", mainHandler).Methods(http.MethodGet)
 
 	subRouter.HandleFunc("/dailyStart", dailyStart).Methods(http.MethodGet)
