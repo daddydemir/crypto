@@ -16,6 +16,7 @@ func init() {
 	dailyEnd(c)
 	validateCache(c)
 	checkAll(c)
+	checkOutOfThresholds(c)
 
 	c.Start()
 }
@@ -67,6 +68,15 @@ func checkAll(task *cron.Cron) {
 	task.AddFunc(spec, func() {
 		maService := service.NewMaService()
 		maService.CheckAll(7, 25, 99)
+	})
+}
+
+func checkOutOfThresholds(task *cron.Cron) {
+	spec := "50 12 * * *"
+
+	_, _ = task.AddFunc(spec, func() {
+		bollingerService := service.NewBollingerService()
+		bollingerService.CheckThresholds()
 	})
 }
 

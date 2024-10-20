@@ -10,9 +10,9 @@ import (
 	"net/http"
 )
 
-var upperBand []graphs.ChartModel
-var lowerBand []graphs.ChartModel
-var original []graphs.ChartModel
+var UpperBand []graphs.ChartModel
+var LowerBand []graphs.ChartModel
+var Original []graphs.ChartModel
 
 type bollingerBands struct {
 	name         string
@@ -67,9 +67,9 @@ func (b *bollingerBands) Calculate() []graphs.ChartModel {
 		}
 
 		response = append(response, chartModel)
-		upperBand = append(upperBand, upper)
-		lowerBand = append(lowerBand, lower)
-		original = append(original, o)
+		UpperBand = append(UpperBand, upper)
+		LowerBand = append(LowerBand, lower)
+		Original = append(Original, o)
 	}
 
 	return response
@@ -79,9 +79,9 @@ func (b *bollingerBands) Draw(list []graphs.ChartModel) func(w http.ResponseWrit
 	return func(w http.ResponseWriter, r *http.Request) {
 		chart := localCharts.CreateLineChart("Bollinger Bands")
 		dates, data := localCharts.ChartModel2lineData(list)
-		_, uppers := localCharts.ChartModel2lineData(upperBand)
-		_, lowers := localCharts.ChartModel2lineData(lowerBand)
-		_, origin := localCharts.ChartModel2lineData(original)
+		_, uppers := localCharts.ChartModel2lineData(UpperBand)
+		_, lowers := localCharts.ChartModel2lineData(LowerBand)
+		_, origin := localCharts.ChartModel2lineData(Original)
 		chart.SetXAxis(dates).
 			AddSeries("low", lowers).
 			AddSeries("middle", data).
@@ -89,9 +89,9 @@ func (b *bollingerBands) Draw(list []graphs.ChartModel) func(w http.ResponseWrit
 			AddSeries(b.name, origin)
 
 		err := chart.Render(w)
-		upperBand = nil
-		lowerBand = nil
-		original = nil
+		UpperBand = nil
+		LowerBand = nil
+		Original = nil
 		if err != nil {
 			slog.Error("Draw:Render", "chart", b.name, "error", err)
 		}
