@@ -29,7 +29,10 @@ func (b *bollingerService) CheckThresholds() {
 		return
 	}
 
-	for _, coin := range coins {
+	for index, coin := range coins {
+		if index > 30 {
+			continue
+		}
 		bands := bollingerBands.NewBollingerBands(coin.Id, 20)
 		_ = bands.Calculate()
 

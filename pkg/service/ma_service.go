@@ -69,7 +69,10 @@ func (m *maService) CheckAll(short, middle, long int) {
 	signals := make([]model.SignalModel, 0)
 	coins := m.getCoins()
 
-	for _, coin := range coins {
+	for index, coin := range coins {
+		if index > 30 {
+			continue
+		}
 		shortItem, middleItem, longItem, err := m.calculateMaItems(coin.Id, short, middle, long)
 		if err != nil {
 			slog.Error("CheckAll:calculateMaItems", "coin", coin.Id, "error", err)
@@ -82,11 +85,11 @@ func (m *maService) CheckAll(short, middle, long int) {
 			rsiIndex := rsiService.Index()
 			signals = append(signals, m.createSignalModel(coin.Id, r, shortItem.Value, middleItem.Value, longItem.Value, rsiIndex))
 			if r == "7 > 25 > 99" {
-				message := fmt.Sprintf("Alim Sinyali olabilir: %v , rsi: %0.f \n", coin.Id, rsiIndex)
+				message := fmt.Sprintf("[Moving Average] \ncoin: %v Rsi: %0.f \nAsiri Alis", coin.Id, rsiIndex)
 				slog.Info("CheckAll", "message", message)
 				m.Broker.SendMessage(message)
 			} else if r == "99 > 25 > 7" {
-				message := fmt.Sprintf("Satis sinyali olabilir: %v , rsi: %0.f \n", coin.Id, rsiIndex)
+				message := fmt.Sprintf("[Moving Average] \ncoin: %v Rsi: %0.f \nAsiri Satis", coin.Id, rsiIndex)
 				slog.Info("CheckAll", "message", message)
 				m.Broker.SendMessage(message)
 			} else {
