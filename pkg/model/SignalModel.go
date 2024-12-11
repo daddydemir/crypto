@@ -15,3 +15,7 @@ type SignalModel struct {
 	Rsi        float32
 	Result     string
 }
+
+type SignalRepository interface {
+	SaveAll(signals []SignalModel) error
+}

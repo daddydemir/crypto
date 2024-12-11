@@ -9,3 +9,7 @@ type ExchangeModel struct {
 	CoinImage    string
 	InstantPrice float32
 }
+
+type ExchangeRepository interface {
+	FindAll() ([]ExchangeModel, error)
+}

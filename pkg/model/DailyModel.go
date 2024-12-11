@@ -18,10 +18,15 @@ type DailyModel struct {
 	ExchangeId string
 }
 
-func (d *DailyModel) create() {}
-
 func (d DailyModel) ToMap() map[string]DailyModel {
 	m := make(map[string]DailyModel)
 	m[d.ExchangeId] = d
 	return m
+}
+
+type DailyRepository interface {
+	FindByDateRange(start, end string) ([]DailyModel, error)
+	FindByIdAndDateRange(id, start, end string) ([]DailyModel, error)
+	FindTopSmallerByRate(start, end string) ([5]DailyModel, error)
+	FindTopBiggerByRate(start, end string) ([5]DailyModel, error)
 }
