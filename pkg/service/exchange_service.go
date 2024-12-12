@@ -13,3 +13,7 @@ func NewExchangeService(exchangeRepo model.ExchangeRepository) *ExchangeService 
 func (e *ExchangeService) FindAll() ([]model.ExchangeModel, error) {
 	return e.exchangeRepo.FindAll()
 }
+
+func (e *ExchangeService) SaveAll(exchanges []model.ExchangeModel) error {
+	return e.exchangeRepo.SaveAll(exchanges)
+}

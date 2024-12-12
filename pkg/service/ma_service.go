@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
-	"github.com/daddydemir/crypto/pkg/database/service"
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/graphs/ma"
 	"github.com/daddydemir/crypto/pkg/graphs/rsi"
@@ -16,19 +15,21 @@ import (
 	"time"
 )
 
-type maService struct {
-	cache.Cache
-	broker.Broker
+type MovingAverageService struct {
+	cache         cache.Cache
+	broker        broker.Broker
+	signalService SignalService
 }
 
-func NewMaService() *maService {
-	return &maService{
-		cache.GetCacheService(),
-		broker.GetBrokerService(),
+func NewMovingAverageService(c cache.Cache, b broker.Broker, s SignalService) *MovingAverageService {
+	return &MovingAverageService{
+		cache:         c,
+		broker:        b,
+		signalService: s,
 	}
 }
 
-func (m *maService) CheckWithId(coin string, short, middle, long int) {
+func (m *MovingAverageService) CheckWithId(coin string, short, middle, long int) {
 
 	shortService := ma.NewEma(coin, short)
 	middleService := ma.NewEma(coin, middle)
@@ -65,7 +66,7 @@ func (m *maService) CheckWithId(coin string, short, middle, long int) {
 
 }
 
-func (m *maService) CheckAll(short, middle, long int) {
+func (m *MovingAverageService) CheckAll(short, middle, long int) {
 	signals := make([]model.SignalModel, 0)
 	coins := m.getCoins()
 
@@ -87,11 +88,11 @@ func (m *maService) CheckAll(short, middle, long int) {
 			if r == "7 > 25 > 99" {
 				message := fmt.Sprintf("[Moving Average] \ncoin: %v Rsi: %0.f \nAsiri Alis", coin.Id, rsiIndex)
 				slog.Info("CheckAll", "message", message)
-				m.Broker.SendMessage(message)
+				m.broker.SendMessage(message)
 			} else if r == "99 > 25 > 7" {
 				message := fmt.Sprintf("[Moving Average] \ncoin: %v Rsi: %0.f \nAsiri Satis", coin.Id, rsiIndex)
 				slog.Info("CheckAll", "message", message)
-				m.Broker.SendMessage(message)
+				m.broker.SendMessage(message)
 			} else {
 				slog.Info("CheckAll", "message", "Onemsiz", "coin", coin.Id, "pattern", r)
 			}
@@ -99,7 +100,10 @@ func (m *maService) CheckAll(short, middle, long int) {
 			slog.Error("CheckAll", "coin", coin.Id, "message", "invalid data")
 		}
 	}
-	service.SaveSignals(signals)
+	err := m.signalService.SaveAll(signals)
+	if err != nil {
+		slog.Error("CheckAll:signalService.SaveAll", "error", err)
+	}
 }
 
 func result(short, middle, long float32) string {
@@ -131,10 +135,10 @@ func result(short, middle, long float32) string {
 	return ""
 }
 
-func (m *maService) getCoins() []coincap.Coin {
+func (m *MovingAverageService) getCoins() []coincap.Coin {
 	cacheKey := "coinList"
 	var coins []coincap.Coin
-	cacheBody, err := m.Cache.Get(cacheKey)
+	cacheBody, err := m.cache.Get(cacheKey)
 	if err != nil {
 		slog.Error("CheckAll:Cache.Get", "key", cacheKey, "error", err)
 		return nil
@@ -154,7 +158,7 @@ func (m *maService) getCoins() []coincap.Coin {
 	return coins
 }
 
-func (m *maService) calculateMaItems(coin string, short, middle, long int) (shortItem, middleItem, longItem graphs.ChartModel, err error) {
+func (m *MovingAverageService) calculateMaItems(coin string, short, middle, long int) (shortItem, middleItem, longItem graphs.ChartModel, err error) {
 	shortService := ma.NewEma(coin, short)
 	middleService := ma.NewEma(coin, middle)
 	longService := ma.NewEma(coin, long)
@@ -174,7 +178,7 @@ func (m *maService) calculateMaItems(coin string, short, middle, long int) (shor
 	return
 }
 
-func (m *maService) createSignalModel(coin, result string, short, midd, long, rsi float32) model.SignalModel {
+func (m *MovingAverageService) createSignalModel(coin, result string, short, midd, long, rsi float32) model.SignalModel {
 	return model.SignalModel{
 		ID:         uuid.New(),
 		ExchangeId: coin,

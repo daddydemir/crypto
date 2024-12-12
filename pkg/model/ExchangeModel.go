@@ -12,4 +12,5 @@ type ExchangeModel struct {
 
 type ExchangeRepository interface {
 	FindAll() ([]ExchangeModel, error)
+	SaveAll([]ExchangeModel) error
 }

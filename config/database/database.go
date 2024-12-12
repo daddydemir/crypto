@@ -8,3 +8,9 @@ type Database interface {
 }
 
 var D *gorm.DB
+
+func GetDatabaseService() *gorm.DB {
+	var db = PostgresDB{}
+	db.Connect()
+	return D
+}

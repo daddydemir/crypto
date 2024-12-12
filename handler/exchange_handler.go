@@ -15,9 +15,14 @@ func getExchange(w http.ResponseWriter, _ *http.Request) {
 }
 
 func getExchangeFromDb(w http.ResponseWriter, _ *http.Request) {
-	response := service.GetExchangeFromDb()
+
+	exchangeService := serviceFactory.NewExchangeService()
+	response, err := exchangeService.FindAll()
+	if err != nil {
+		slog.Error("getExchangeFromDb:FindAll", "error", err)
+	}
 	slog.Info("getExchangeFromDb:service.GetExchangeFromDb", "response", response)
-	err := json.NewEncoder(w).Encode(response)
+	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		slog.Error("getExchangeFromDb:json.Encode", "error", err)
 	}

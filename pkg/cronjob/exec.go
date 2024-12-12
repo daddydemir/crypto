@@ -1,16 +1,24 @@
 package cronjob
 
 import (
+	"github.com/daddydemir/crypto/config/database"
+	"github.com/daddydemir/crypto/pkg/broker"
+	"github.com/daddydemir/crypto/pkg/cache"
 	db "github.com/daddydemir/crypto/pkg/database/service"
+	"github.com/daddydemir/crypto/pkg/factory"
 	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/robfig/cron/v3"
 	"log/slog"
 	"time"
 )
 
+var serviceFactory *factory.ServiceFactory
+
 func init() {
 	location, _ := time.LoadLocation("Turkey")
 	c := cron.New(cron.WithLocation(location))
+
+	serviceFactory = factory.NewServiceFactory(database.GetDatabaseService(), cache.GetCacheService(), broker.GetBrokerService())
 
 	dailyStart(c)
 	dailyEnd(c)
@@ -66,8 +74,8 @@ func validateCache(task *cron.Cron) {
 func checkAll(task *cron.Cron) {
 	spec := "30 05 * * *"
 	task.AddFunc(spec, func() {
-		maService := service.NewMaService()
-		maService.CheckAll(7, 25, 99)
+		averageService := serviceFactory.NewAverageService()
+		averageService.CheckAll(7, 25, 99)
 	})
 }
 

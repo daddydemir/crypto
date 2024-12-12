@@ -20,3 +20,8 @@ func (p *postgresExchangeRepository) FindAll() ([]model.ExchangeModel, error) {
 	p.db.Find(&exchanges)
 	return exchanges, nil
 }
+
+func (p *postgresExchangeRepository) SaveAll(models []model.ExchangeModel) error {
+	tx := p.db.Save(&models)
+	return tx.Error
+}
