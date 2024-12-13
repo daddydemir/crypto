@@ -32,3 +32,8 @@ func (f *ServiceFactory) NewExchangeService() *service.ExchangeService {
 	repository := postgres.NewPostgresExchangeRepository(f.db)
 	return service.NewExchangeService(repository)
 }
+
+func (f *ServiceFactory) NewDailyService() *service.DailyService {
+	repository := postgres.NewPostgresDailyRepository(f.db)
+	return service.NewDailyService(repository)
+}

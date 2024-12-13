@@ -4,7 +4,6 @@ import (
 	"github.com/daddydemir/crypto/config/database"
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
-	db "github.com/daddydemir/crypto/pkg/database/service"
 	"github.com/daddydemir/crypto/pkg/factory"
 	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/robfig/cron/v3"
@@ -32,9 +31,10 @@ func init() {
 func dailyStart(task *cron.Cron) {
 
 	spec := "15 00 * * *"
+	ds := serviceFactory.NewDailyService()
 
 	entryID, err := task.AddFunc(spec, func() {
-		db.CreateDaily(true)
+		ds.CreateDaily(true)
 	})
 
 	printLog(entryID, err, "dailyStart cron ID : ")
@@ -45,8 +45,10 @@ func dailyEnd(task *cron.Cron) {
 
 	spec := "15 23 * * *"
 
+	ds := serviceFactory.NewDailyService()
+
 	entryID, err := task.AddFunc(spec, func() {
-		db.CreateDaily(false)
+		ds.CreateDaily(false)
 	})
 
 	printLog(entryID, err, "dailyEnd cron ID : ")

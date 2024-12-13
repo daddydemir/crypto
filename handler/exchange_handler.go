@@ -2,9 +2,10 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/daddydemir/crypto/pkg/database/service"
 	"log/slog"
 	"net/http"
+
+	"github.com/daddydemir/crypto/pkg/service"
 )
 
 func getExchange(w http.ResponseWriter, _ *http.Request) {
@@ -29,5 +30,6 @@ func getExchangeFromDb(w http.ResponseWriter, _ *http.Request) {
 }
 
 func createExchange(_ http.ResponseWriter, _ *http.Request) {
-	service.CreateExchange()
+	exchangeService := serviceFactory.NewExchangeService()
+	exchangeService.CreateExchange()
 }

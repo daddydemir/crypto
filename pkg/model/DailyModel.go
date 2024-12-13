@@ -29,4 +29,5 @@ type DailyRepository interface {
 	FindByIdAndDateRange(id, start, end string) ([]DailyModel, error)
 	FindTopSmallerByRate(start, end string) ([5]DailyModel, error)
 	FindTopBiggerByRate(start, end string) ([5]DailyModel, error)
+	SaveAll(dailies []DailyModel) error
 }

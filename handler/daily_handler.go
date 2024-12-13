@@ -2,19 +2,20 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/daddydemir/crypto/pkg/dao"
-	"github.com/daddydemir/crypto/pkg/database/service"
 	"io/ioutil"
 	"log/slog"
 	"net/http"
+
+	"github.com/daddydemir/crypto/pkg/dao"
+	"github.com/daddydemir/crypto/pkg/service"
 )
 
 func dailyStart(_ http.ResponseWriter, _ *http.Request) {
-	service.CreateDaily(true)
+	//service.CreateDaily(true)
 }
 
 func dailyEnd(_ http.ResponseWriter, _ *http.Request) {
-	service.CreateDaily(false)
+	//service.CreateDaily(false)
 }
 
 func daily(w http.ResponseWriter, _ *http.Request) {
@@ -36,7 +37,11 @@ func getDaily(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("getDaily:json.Unmarshal", "error", err)
 	}
-	response := service.GetDailyFromDb(request)
+	dailyService := serviceFactory.NewDailyService()
+	response, err := dailyService.FindByDateRange(request.StartDate, request.EndDate)
+	if err != nil {
+		slog.Error("daily:FindByDateRange", "error", err)
+	}
 	slog.Info("daily:service.GetDailyFromDb", "request", request, "response", response)
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
@@ -54,7 +59,11 @@ func getDailyWithId(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("getDailyWithId:json.Unmarshal", "error", err)
 	}
-	response := service.GetDailyWithId(request)
+	dailyService := serviceFactory.NewDailyService()
+	response, err := dailyService.FindByIdAndDateRange(request.Id, request.StartDate, request.EndDate)
+	if err != nil {
+		slog.Error("daily:FindByIdAndDateRange", "error", err)
+	}
 	slog.Info("daily:service.GetDailyWithId", "request", request, "response", response)
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
