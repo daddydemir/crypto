@@ -15,6 +15,5 @@ type Cache interface {
 }
 
 func GetCacheService() Cache {
-	// buradan butun cache islemleri degistirilebilir.
 	return redis.NewRedisCache()
 }

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/model"
 	"log/slog"
 	"time"
@@ -53,8 +55,8 @@ func (d *DailyService) CreateDaily(morning bool) {
 		var save []model.DailyModel
 
 		for i := 0; i < len(dailies); i++ {
-			gecko = MergeMap(gecko, dailies[i].ToMap())
-			db = MergeMap(db, models[i].ToMap())
+			gecko = mergeMap(gecko, dailies[i].ToMap())
+			db = mergeMap(db, models[i].ToMap())
 		}
 
 		current := model.DailyModel{}
@@ -79,16 +81,16 @@ func (d *DailyService) CreateDaily(morning bool) {
 
 			save = append(save, current)
 		}
-		err = d.SaveAll(save)
+		/*err = d.SaveAll(save)
 		if err != nil {
 			slog.Error("CreateDaily.SaveAll", "error", err)
-		}
-		// todo: create message call
+		} */
+		d.sendDailyMessage()
 	}
 
 }
 
-func MergeMap(m1, m2 map[string]model.DailyModel) map[string]model.DailyModel {
+func mergeMap(m1, m2 map[string]model.DailyModel) map[string]model.DailyModel {
 	merged := make(map[string]model.DailyModel, len(m1)+len(m2))
 	merged = m1
 	for key, value := range m2 {
@@ -96,4 +98,40 @@ func MergeMap(m1, m2 map[string]model.DailyModel) map[string]model.DailyModel {
 	}
 
 	return merged
+}
+
+func (d *DailyService) sendDailyMessage() {
+	var m1, m2, rate, mod string
+
+	startDate := time.Now().Format("2006-01-02")
+	endDate := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+
+	bigger, err := d.FindTopBiggerByRate(endDate, startDate)
+	if err != nil {
+		slog.Error("FindTopBiggerByRate", "error", err, "startDate", startDate, "endDate", endDate)
+	}
+	smaller, err := d.FindTopSmallerByRate(endDate, startDate)
+	if err != nil {
+		slog.Error("FindTopSmallerByRate", "error", err, "startDate", startDate, "endDate", endDate)
+	}
+
+	for i := 0; i < 5; i++ {
+		rate = fmt.Sprintf("%.2f", bigger[i].Rate)
+		mod = fmt.Sprintf("%.1f", bigger[i].Modulus)
+		m1 += "(" + bigger[i].ExchangeId + ")\t %" + rate + "\t | \t" + mod + "$ \n"
+
+		rate = fmt.Sprintf("%.2f", smaller[i].Rate)
+		mod = fmt.Sprintf("%v", smaller[i].Modulus)
+		m2 += "(" + smaller[i].ExchangeId + ")\t %" + rate + "\t | \t" + mod + "$ \n"
+	}
+
+	brokerService := broker.GetBrokerService()
+	err = brokerService.SendMessage(m1)
+	if err != nil {
+		slog.Error("SendMessage", "error", err)
+	}
+	err = brokerService.SendMessage(m2)
+	if err != nil {
+		slog.Error("SendMessage", "error", err)
+	}
 }
