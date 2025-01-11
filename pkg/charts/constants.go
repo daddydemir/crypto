@@ -26,6 +26,8 @@ var GlobalOptions = []charts.GlobalOpts{
 		XAxisIndex: []int{0},
 	}),
 	charts.WithInitializationOpts(opts.Initialization{
-		Theme: types.ThemeWesteros,
+		Theme:  types.ThemeWesteros,
+		Width:  "1536px",
+		Height: "864px",
 	}),
 }
