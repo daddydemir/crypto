@@ -14,4 +14,5 @@ type Alert struct {
 type AlertRepository interface {
 	Save(alert Alert) error
 	GetAll() ([]Alert, error)
+	Delete(id int) error
 }

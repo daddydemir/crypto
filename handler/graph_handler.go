@@ -5,6 +5,7 @@ import (
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/graphs/bollingerBands"
 	"github.com/daddydemir/crypto/pkg/graphs/ma"
+	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/gorilla/mux"
 	"log/slog"
@@ -28,14 +29,15 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 
 	var coinData [100]CoinData
 
-	coins := cacheService.GetCoins()
+	coins := coincap.ListCoins()
+	go alertService.ControlAlerts(coins)
 	rsi := graphs.RSI{}
 
 	for i, coin := range coins {
 		var class string
 		var index float32 = 0
 
-		if i <= 20 {
+		if i <= 25 {
 			index = rsi.Index(coin.Id)
 		}
 

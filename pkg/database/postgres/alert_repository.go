@@ -25,3 +25,8 @@ func (p *postgresAlertRepository) GetAll() ([]model.Alert, error) {
 	tx := p.db.Where("is_active = true").Find(&list)
 	return list, tx.Error
 }
+
+func (p *postgresAlertRepository) Delete(id int) error {
+	tx := p.db.Where("id = ?", id).Delete(&model.Alert{})
+	return tx.Error
+}

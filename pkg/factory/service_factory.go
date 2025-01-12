@@ -40,7 +40,7 @@ func (f *ServiceFactory) NewDailyService() *service.DailyService {
 
 func (f *ServiceFactory) NewAlertService() *service.AlertService {
 	repository := postgres.NewPostgresAlertRepository(f.db)
-	return service.NewAlertService(repository)
+	return service.NewAlertService(repository, f.broker)
 }
 
 func (f *ServiceFactory) NewCacheService() *service.CacheService {
