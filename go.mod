@@ -3,6 +3,7 @@ module github.com/daddydemir/crypto
 go 1.22.0
 
 require (
+	github.com/daddydemir/dlog v1.0.1
 	github.com/go-echarts/go-echarts/v2 v2.4.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
@@ -22,7 +23,6 @@ require (
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/daddydemir/dlog v1.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect

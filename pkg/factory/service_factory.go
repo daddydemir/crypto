@@ -37,3 +37,8 @@ func (f *ServiceFactory) NewDailyService() *service.DailyService {
 	repository := postgres.NewPostgresDailyRepository(f.db)
 	return service.NewDailyService(repository)
 }
+
+func (f *ServiceFactory) NewAlertService() *service.AlertService {
+	repository := postgres.NewPostgresAlertRepository(f.db)
+	return service.NewAlertService(repository)
+}

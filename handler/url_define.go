@@ -14,6 +14,7 @@ var serviceFactory *factory.ServiceFactory
 
 func init() {
 	serviceFactory = factory.NewServiceFactory(database.GetDatabaseService(), cache.GetCacheService(), broker.GetBrokerService())
+	alertService = serviceFactory.NewAlertService()
 }
 
 func Route() http.Handler {
@@ -42,6 +43,9 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/createExchange", createExchange).Methods(http.MethodGet)
 
 	subRouter.HandleFunc("/weekly", getWeekly).Methods(http.MethodGet)
+
+	subRouter.HandleFunc("/alert", alertPage).Methods(http.MethodGet)
+	subRouter.HandleFunc("/alert", alert).Methods(http.MethodPost)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
