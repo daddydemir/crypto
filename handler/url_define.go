@@ -15,6 +15,7 @@ var serviceFactory *factory.ServiceFactory
 func init() {
 	serviceFactory = factory.NewServiceFactory(database.GetDatabaseService(), cache.GetCacheService(), broker.GetBrokerService())
 	alertService = serviceFactory.NewAlertService()
+	cacheService = serviceFactory.NewCacheService()
 }
 
 func Route() http.Handler {

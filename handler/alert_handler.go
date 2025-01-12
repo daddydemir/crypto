@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"github.com/daddydemir/crypto/assets"
-	"github.com/daddydemir/crypto/pkg/cache"
 	"github.com/daddydemir/crypto/pkg/model"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/daddydemir/crypto/pkg/service"
@@ -13,13 +12,13 @@ import (
 )
 
 var alertService *service.AlertService
+var cacheService *service.CacheService
 
 func alertPage(w http.ResponseWriter, r *http.Request) {
 	tmpl := assets.GetTemplate("templates/alert.html")
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	cacheService := service.NewCacheService(cache.GetCacheService())
 	coins := cacheService.GetCoins()
 
 	alerts, err := alertService.GetAll()

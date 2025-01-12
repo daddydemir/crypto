@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <title>Coins</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-6">
+<h3 class="text-2xl font-bold mb-6">Coins</h3>
+<div class="container mx-auto">
+    <div class="flex justify-center">
+        <div class="w-full overflow-x-auto">
+            <table id="coin-table" class="min-w-full bg-white border border-gray-300">
+                <thead>
+                <tr class="bg-gray-100">
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-sort="price">Price</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RSI</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Index</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SMA</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMA</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MA</th>
+                    <th class="px-6 py-3 border-b border-gray-300 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bollinger Bands</th>
+                </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-300">
+                {{range .Coins}}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">{{.Index}}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{.Name}}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{.Symbol}}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${{.PriceUsd}}</td>
+                    <td class="px-6 py-4 whitespace-nowrap"><a href="/api/v1/graph/rsi/{{.Id}}" class="text-blue-600 hover:text-blue-800" target="_blank">graph</a></td>
+                    <td class="{{.RsiClass}} px-6 py-4 whitespace-nowrap">{{.Rsi}}</td>
+                    <td class="px-6 py-4 whitespace-nowrap"><a href="/api/v1/graph/sma/{{.Id}}" class="text-blue-600 hover:text-blue-800" target="_blank">graph</a></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><a href="/api/v1/graph/ema/{{.Id}}" class="text-blue-600 hover:text-blue-800" target="_blank">graph</a></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><a href="/api/v1/graph/ma/{{.Id}}" class="text-blue-600 hover:text-blue-800" target="_blank">graph</a></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><a href="/api/v1/graph/bollingerBands/{{.Id}}" class="text-blue-600 hover:text-blue-800" target="_blank">graph</a></td>
+                </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="fixed bottom-6 right-6">
+    <a href="/api/v1/alert" class="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Alarm Kur</a>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+<script>
+    $('#coin-table').DataTable({
+        paging: false,
+        searching: false,
+    });
+</script>
+</body>
+</html>

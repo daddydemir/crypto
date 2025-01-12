@@ -42,3 +42,7 @@ func (f *ServiceFactory) NewAlertService() *service.AlertService {
 	repository := postgres.NewPostgresAlertRepository(f.db)
 	return service.NewAlertService(repository)
 }
+
+func (f *ServiceFactory) NewCacheService() *service.CacheService {
+	return service.NewCacheService(f.cache)
+}
