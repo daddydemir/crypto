@@ -11,6 +11,8 @@ type Cache interface {
 	SetList(key string, list any, exp time.Duration) error
 	Get(key string) (any, error)
 	GetList(key string, list any, start, end int64) error
+	DeleteListItem(key string, start, end int64) error
+	DeleteLastItem(key string) error
 	Delete(key string) error
 }
 

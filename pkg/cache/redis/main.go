@@ -104,3 +104,47 @@ func (r *RedisCache) Delete(key string) error {
 	response := r.client.Del(context.Background(), key)
 	return response.Err()
 }
+
+func (r *RedisCache) DeleteListItem(key string, start, end int64) error {
+	ctx := context.Background()
+
+	listLength, err := r.client.LLen(ctx, key).Result()
+	if err != nil {
+		return fmt.Errorf("failed to get list length: %w", err)
+	}
+
+	if start < 0 || end >= listLength || start > end {
+		return fmt.Errorf("invalid range: start (%d), end (%d), list length (%d)", start, end, listLength)
+	}
+
+	if start > 0 {
+		err = r.client.LTrim(ctx, key, 0, start-1).Err()
+		if err != nil {
+			return fmt.Errorf("failed to trim the beginning of the list: %w", err)
+		}
+	}
+
+	if end < listLength-1 {
+		err = r.client.LTrim(ctx, key, end+1, listLength-1).Err()
+		if err != nil {
+			return fmt.Errorf("failed to trim the end of the list: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (r *RedisCache) DeleteLastItem(key string) error {
+	ctx := context.Background()
+
+	val, err := r.client.RPop(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return fmt.Errorf("list is empty or does not exist")
+		}
+		return fmt.Errorf("failed to remove last item: %w", err)
+	}
+
+	fmt.Printf("Removed last item: %s\n", val)
+	return nil
+}
