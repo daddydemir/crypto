@@ -4,6 +4,7 @@ import (
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
 	"github.com/daddydemir/crypto/pkg/database/postgres"
+	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/daddydemir/crypto/pkg/service"
 	"gorm.io/gorm"
 )
@@ -45,4 +46,24 @@ func (f *ServiceFactory) NewAlertService() *service.AlertService {
 
 func (f *ServiceFactory) NewCacheService() *service.CacheService {
 	return service.NewCacheService(f.cache)
+}
+
+func (f *ServiceFactory) NewRsiService(coin string) *service.RsiService {
+	return service.NewRsiService(coin)
+}
+
+func (f *ServiceFactory) NewCoinCapClient() *coincap.Client {
+	return coincap.NewClient()
+}
+
+func (f *ServiceFactory) NewCachedCoinCapClient() *coincap.CachedClient {
+	return coincap.NewCachedClient(*f.NewCoinCapClient(), f.cache)
+}
+
+func (f *ServiceFactory) NewValidateService() *service.ValidateService {
+	return service.NewValidateService(f.cache, f.NewCachedCoinCapClient())
+}
+
+func (f *ServiceFactory) NewBollingerService() *service.BollingerService {
+	return service.NewBollingerService(f.cache, f.broker, f.NewCachedCoinCapClient())
 }

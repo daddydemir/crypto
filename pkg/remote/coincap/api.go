@@ -13,14 +13,22 @@ var (
 	priceHistoryWithTime = "https://api.coincap.io/v2/assets/%v/history?interval=d1&start=%d&end=%d"
 )
 
-func ListCoins() []Coin {
+type Client struct {
+}
+
+func NewClient() *Client {
+	return &Client{}
+}
+
+// todo refactor error
+func (c *Client) ListCoins() (error, []Coin) {
 
 	var data Data[Coin]
 
 	resp, err := http.Get(allCoins)
 	if err != nil {
 		slog.Error("ListCoins:http.Get", "url", allCoins, "err", err)
-		return nil
+		return err, nil
 	} else {
 		slog.Info("ListCoins:http.Get", "url", allCoins, "statusCode", resp.StatusCode)
 	}
@@ -28,13 +36,13 @@ func ListCoins() []Coin {
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
 		slog.Error("ListCoins:json.Decode", "err", err)
-		return nil
+		return err, nil
 	}
 
-	return data.Data
+	return nil, data.Data
 }
 
-func HistoryWithId(s string) []History {
+func (c *Client) HistoryWithId(s string) (error, []History) {
 
 	var data Data[History]
 
@@ -43,7 +51,7 @@ func HistoryWithId(s string) []History {
 	resp, err := http.Get(url)
 	if err != nil {
 		slog.Error("HistoryWithId:http.Get", "url", url, "err", err)
-		return nil
+		return err, nil
 	} else {
 		slog.Info("HistoryWithId:http.Get", "url", url, "statusCode", resp.StatusCode)
 	}
@@ -51,20 +59,20 @@ func HistoryWithId(s string) []History {
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
 		slog.Error("HistoryWithId:json.Decode", "err", err)
-		return nil
+		return err, nil
 	}
 
-	return data.Data
+	return nil, data.Data
 }
 
-func HistoryWithTime(s string, start, end int64) []History {
+func (c *Client) HistoryWithTime(s string, start, end int64) (error, []History) {
 	var data Data[History]
 	url := fmt.Sprintf(priceHistoryWithTime, s, start/1_000_000, end/1_000_000)
 
 	resp, err := http.Get(url)
 	if err != nil {
 		slog.Error("HistoryWithTime:http.Get", "url", url, "err", err)
-		return nil
+		return err, nil
 	} else {
 		slog.Info("HistoryWithTime:http.Get", "url", url, "statusCode", resp.StatusCode)
 	}
@@ -72,7 +80,7 @@ func HistoryWithTime(s string, start, end int64) []History {
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
 		slog.Error("HistoryWithTime:json.Decode", "error", err, "data", resp.Body)
-		return nil
+		return err, nil
 	}
-	return data.Data
+	return nil, data.Data
 }

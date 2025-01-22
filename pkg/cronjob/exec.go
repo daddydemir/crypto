@@ -5,7 +5,6 @@ import (
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
 	"github.com/daddydemir/crypto/pkg/factory"
-	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/robfig/cron/v3"
 	"log/slog"
 	"time"
@@ -66,9 +65,9 @@ func rsiCheck(task *cron.Cron) {
 
 func validateCache(task *cron.Cron) {
 	spec := "30 04 * * *"
-
+	validateService := serviceFactory.NewValidateService()
 	entryID, err := task.AddFunc(spec, func() {
-		service.Validate()
+		validateService.Validate()
 	})
 	printLog(entryID, err, "validateCache cron ID : ")
 }
@@ -85,7 +84,7 @@ func checkOutOfThresholds(task *cron.Cron) {
 	spec := "50 12 * * *"
 
 	_, _ = task.AddFunc(spec, func() {
-		bollingerService := service.NewBollingerService()
+		bollingerService := serviceFactory.NewBollingerService()
 		bollingerService.CheckThresholds()
 	})
 }

@@ -9,21 +9,23 @@ import (
 	"log/slog"
 )
 
-type bollingerService struct {
+type BollingerService struct {
 	cache.Cache
 	broker.Broker
+	client coincap.CoinCapClient
 }
 
-func NewBollingerService() *bollingerService {
-	return &bollingerService{
-		cache.GetCacheService(),
-		broker.GetBrokerService(),
+func NewBollingerService(cache2 cache.Cache, broker2 broker.Broker, client coincap.CoinCapClient) *BollingerService {
+	return &BollingerService{
+		cache2,
+		broker2,
+		client,
 	}
 }
 
-func (b *bollingerService) CheckThresholds() {
+func (b *BollingerService) CheckThresholds() {
 
-	coins := coincap.ListCoins()
+	_, coins := b.client.ListCoins()
 	if len(coins) == 0 {
 		slog.Error("coincap.ListCoins", "error", "List is empty")
 		return

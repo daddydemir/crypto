@@ -8,8 +8,21 @@ import (
 	"time"
 )
 
-func Validate() {
-	cacheService := cache.GetCacheService()
+type ValidateService struct {
+	cache.Cache
+	client coincap.CoinCapClient
+}
+
+func NewValidateService(c cache.Cache, client coincap.CoinCapClient) *ValidateService {
+	return &ValidateService{
+		c,
+		client,
+	}
+}
+
+func (v *ValidateService) Validate() {
+	cacheService := v.Cache
+	client := v.client
 	var coins []coincap.Coin
 	data, err := cacheService.Get("coinList")
 	if err != nil {
@@ -36,7 +49,7 @@ func Validate() {
 			slog.Error("Validate:cacheService.GetList", "coin", i.Id, "error", err)
 			continue
 		}
-		histories := coincap.HistoryWithTime(i.Id, array[0].Date.Add(time.Hour*24).UnixNano(), time.Now().UnixNano())
+		_, histories := client.HistoryWithTime(i.Id, array[0].Date.Add(time.Hour*24).UnixNano(), time.Now().UnixNano())
 
 		if len(histories) == 0 {
 			slog.Error("Validate:coincap.HistoryWithTime", "coin", i.Id, "error", "list is empty")
