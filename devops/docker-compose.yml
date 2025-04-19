@@ -1,1 +1,77 @@
-version: "3"services:  rabbit:    image: rabbitmq:latest    ports:      - "5672:5672"      - "15672:15672"    environment:      RABBITMQ_DEFAULT_USER: localUser      RABBITMQ_DEFAULT_PASS: localPassword  postgre:    image: postgres:latest    ports:      - "5432:5432"    environment:      POSTGRES_USER: localUser      POSTGRES_PASSWORD: localPassword      POSTGRES_DB: crypto  redis:    image: redis:latest    command: ["redis-server", "/etc/redis/redis.conf"]    volumes:      - ./redis.conf:/etc/redis/redis.conf    ports:      - "6379:6379"    profiles:      - cache
+version: "3"
+
+services:
+
+  rabbit:
+    image: rabbitmq:latest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: localUser
+      RABBITMQ_DEFAULT_PASS: localPassword
+    profiles:
+      - queue
+
+  postgre:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: localUser
+      POSTGRES_PASSWORD: localPassword
+      POSTGRES_DB: crypto
+    profiles:
+      - db
+
+  redis:
+    image: redis:latest
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    volumes:
+      - ./redis.conf:/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    profiles:
+      - cache
+
+  redis-ui:
+    image: redis/redisinsight:latest
+    volumes:
+      - redis-data:/data
+    ports:
+      - "5540:5540"
+    profiles:
+      - cache
+
+
+  loki:
+    image: grafana/loki:2.7.3
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yml
+    profiles:
+      - log
+
+  promtail:
+    image: grafana/promtail:2.7.3
+    volumes:
+      - ./promtail:/etc/promtail
+      - C:\Users\demir\dev\crypto\config\log\logs:/var/log
+    command: -config.file=/etc/promtail/config.yaml 
+    profiles:
+      - log
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    profiles:
+      - log
+  
+volumes:
+  redis-data:
+  grafana-storage:

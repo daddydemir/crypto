@@ -9,3 +9,9 @@ todo
 test/
 logs/
 /dist
+
+*_test.go
+taskfile.yml
+todo.md
+
+task.md
