@@ -9,19 +9,19 @@ import (
 	"net/http"
 )
 
-type rsiService struct {
+type RsiService struct {
 	graphic graphs.Graph
 	broker  broker.Broker
 }
 
-func NewRsiService(name string) *rsiService {
-	return &rsiService{
+func NewRsiService(name string) *RsiService {
+	return &RsiService{
 		rsi.NewRsi(name),
 		broker.GetBrokerService(),
 	}
 }
 
-func (r *rsiService) Draw() func(w http.ResponseWriter, r *http.Request) {
+func (r *RsiService) Draw() func(w http.ResponseWriter, r *http.Request) {
 
 	list := r.graphic.Calculate()
 	if len(list) == 0 {
@@ -33,7 +33,7 @@ func (r *rsiService) Draw() func(w http.ResponseWriter, r *http.Request) {
 	return draw
 }
 
-func (r *rsiService) CalculateIndex() {
+func (r *RsiService) CalculateIndex() {
 	index := r.graphic.Index()
 
 	if index < 30 || index > 70 {

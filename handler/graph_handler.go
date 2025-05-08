@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/daddydemir/crypto/assets"
+	"github.com/daddydemir/crypto/pkg/cache"
 	"github.com/daddydemir/crypto/pkg/graphs"
 	"github.com/daddydemir/crypto/pkg/graphs/bollingerBands"
 	"github.com/daddydemir/crypto/pkg/graphs/ma"
@@ -12,6 +13,11 @@ import (
 	"net/http"
 )
 
+var client *coincap.CachedClient
+
+func init() {
+	client = coincap.NewCachedClient(*coincap.NewClient(), cache.GetCacheService())
+}
 type CoinData struct {
 	Index    int
 	Name     string
@@ -29,7 +35,13 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 
 	var coinData [100]CoinData
 
-	coins := coincap.ListCoins()
+	err, coins := client.ListCoins()
+	if err != nil {
+		slog.Error( "mainHandler:ListCoins",  "error", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	go alertService.ControlAlerts(coins)
 	rsi := graphs.RSI{}
 
@@ -62,7 +74,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err := tmpl.Execute(w, struct {
+	err = tmpl.Execute(w, struct {
 		Coins [100]CoinData
 	}{
 		Coins: coinData,
