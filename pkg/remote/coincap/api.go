@@ -3,14 +3,17 @@ package coincap
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/daddydemir/crypto/config"
+	"github.com/daddydemir/crypto/pkg/remote"
 	"log/slog"
-	"net/http"
 )
 
 var (
-	allCoins             = "https://api.coincap.io/v2/assets"
-	priceHistoryWithId   = "https://api.coincap.io/v2/assets/%v/history?interval=d1"
-	priceHistoryWithTime = "https://api.coincap.io/v2/assets/%v/history?interval=d1&start=%d&end=%d"
+	baseUrl              = "https://rest.coincap.io"
+	allCoins             = "/v3/assets?apiKey=%v"
+	priceHistoryWithId   = "/v3/assets/%v/history?interval=d1"
+	priceHistoryWithTime = "/v3/assets/%v/history?interval=d1&start=%d&end=%d"
+	token                = config.Get("API_TOKEN")
 )
 
 type Client struct {
@@ -24,8 +27,10 @@ func NewClient() *Client {
 func (c *Client) ListCoins() (error, []Coin) {
 
 	var data Data[Coin]
+	endpoint := fmt.Sprintf(allCoins, token)
+	client := remote.NewApiClient(baseUrl, token)
 
-	resp, err := http.Get(allCoins)
+	resp, err := client.DoRequest("GET", endpoint, nil)
 	if err != nil {
 		slog.Error("ListCoins:http.Get", "url", allCoins, "err", err)
 		return err, nil
@@ -46,9 +51,11 @@ func (c *Client) HistoryWithId(s string) (error, []History) {
 
 	var data Data[History]
 
-	url := fmt.Sprintf(priceHistoryWithId, s)
+	endpoint := fmt.Sprintf(priceHistoryWithId, s)
+	url := endpoint
+	client := remote.NewApiClient(baseUrl, token)
 
-	resp, err := http.Get(url)
+	resp, err := client.DoRequest("GET", endpoint, nil)
 	if err != nil {
 		slog.Error("HistoryWithId:http.Get", "url", url, "err", err)
 		return err, nil
@@ -67,9 +74,12 @@ func (c *Client) HistoryWithId(s string) (error, []History) {
 
 func (c *Client) HistoryWithTime(s string, start, end int64) (error, []History) {
 	var data Data[History]
-	url := fmt.Sprintf(priceHistoryWithTime, s, start/1_000_000, end/1_000_000)
 
-	resp, err := http.Get(url)
+	endpoint := fmt.Sprintf(priceHistoryWithTime, s, start/1_000_000, end/1_000_000)
+	url := endpoint
+	client := remote.NewApiClient(baseUrl, token)
+	resp, err := client.DoRequest("GET", endpoint, nil)
+	//resp, err := http.Get(url)
 	if err != nil {
 		slog.Error("HistoryWithTime:http.Get", "url", url, "err", err)
 		return err, nil

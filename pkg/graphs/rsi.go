@@ -156,7 +156,7 @@ func generateLineItems(values []float64) []opts.LineData {
 }
 
 func (r RSI) Index(s string) float32 {
-	today := time.Now()
+	today := time.Now().Truncate(24 * time.Hour)
 	err, history := client.HistoryWithTime(s, today.AddDate(0, 0, -15).UnixNano(), today.UnixNano())
 	if err != nil {
 		slog.Error( "Index:HistoryWithTime",  "coin", s)
