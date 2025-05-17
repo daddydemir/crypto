@@ -18,6 +18,7 @@ var client *coincap.CachedClient
 func init() {
 	client = coincap.NewCachedClient(*coincap.NewClient(), cache.GetCacheService())
 }
+
 type CoinData struct {
 	Index    int
 	Name     string
@@ -28,6 +29,9 @@ type CoinData struct {
 	Id       string
 }
 
+// 4845aa67d22a08577de93b8fde39de5359d21dbcba5cbb7f870d2c0b078fb98b
+// e0bc2d4b09ff4f40ab6196747e6cc1d69a1d9bed21dadb829d22ee50da7ed710
+
 func mainHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8;")
 
@@ -37,7 +41,7 @@ func mainHandler(w http.ResponseWriter, r *http.Request) {
 
 	err, coins := client.ListCoins()
 	if err != nil {
-		slog.Error( "mainHandler:ListCoins",  "error", err)
+		slog.Error("mainHandler:ListCoins", "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}

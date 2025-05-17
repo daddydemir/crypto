@@ -3,17 +3,17 @@ package coincap
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/daddydemir/crypto/config"
-	"github.com/daddydemir/crypto/pkg/remote"
+	"github.com/daddydemir/crypto/pkg/remote/coincap/client"
+	"github.com/daddydemir/crypto/pkg/token/provider"
+	"github.com/daddydemir/crypto/pkg/token/strategy"
 	"log/slog"
 )
 
 var (
 	baseUrl              = "https://rest.coincap.io"
-	allCoins             = "/v3/assets?apiKey=%v"
+	allCoins             = "/v3/assets"
 	priceHistoryWithId   = "/v3/assets/%v/history?interval=d1"
 	priceHistoryWithTime = "/v3/assets/%v/history?interval=d1&start=%d&end=%d"
-	token                = config.Get("API_TOKEN")
 )
 
 type Client struct {
@@ -23,14 +23,15 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-// todo refactor error
 func (c *Client) ListCoins() (error, []Coin) {
 
 	var data Data[Coin]
-	endpoint := fmt.Sprintf(allCoins, token)
-	client := remote.NewApiClient(baseUrl, token)
 
-	resp, err := client.DoRequest("GET", endpoint, nil)
+	strategy := strategy.QueryTokenStrategy{ParamName: "apiKey"}
+
+	client := client.NewTokenAwareClient(baseUrl, provider.NewRedisTokenProvider(), strategy)
+
+	resp, _, err := client.DoGet(allCoins)
 	if err != nil {
 		slog.Error("ListCoins:http.Get", "url", allCoins, "err", err)
 		return err, nil
@@ -53,9 +54,10 @@ func (c *Client) HistoryWithId(s string) (error, []History) {
 
 	endpoint := fmt.Sprintf(priceHistoryWithId, s)
 	url := endpoint
-	client := remote.NewApiClient(baseUrl, token)
+	strategy := strategy.HeaderTokenStrategy{}
+	client := client.NewTokenAwareClient(baseUrl, provider.NewRedisTokenProvider(), strategy)
 
-	resp, err := client.DoRequest("GET", endpoint, nil)
+	resp, _, err := client.DoGet(endpoint)
 	if err != nil {
 		slog.Error("HistoryWithId:http.Get", "url", url, "err", err)
 		return err, nil
@@ -77,9 +79,11 @@ func (c *Client) HistoryWithTime(s string, start, end int64) (error, []History) 
 
 	endpoint := fmt.Sprintf(priceHistoryWithTime, s, start/1_000_000, end/1_000_000)
 	url := endpoint
-	client := remote.NewApiClient(baseUrl, token)
-	resp, err := client.DoRequest("GET", endpoint, nil)
-	//resp, err := http.Get(url)
+
+	strategy := strategy.HeaderTokenStrategy{}
+	client := client.NewTokenAwareClient(baseUrl, provider.NewRedisTokenProvider(), strategy)
+	resp, _, err := client.DoGet(endpoint)
+
 	if err != nil {
 		slog.Error("HistoryWithTime:http.Get", "url", url, "err", err)
 		return err, nil
