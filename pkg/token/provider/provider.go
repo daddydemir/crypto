@@ -60,5 +60,10 @@ func (r *RedisTokenProvider) GetValidToken() (string, error) {
 }
 
 func (r *RedisTokenProvider) MarkTokenAsExpired(token string, ttl time.Duration) error {
-	return r.client.SAdd(r.ctx, r.expiredKey, token).Err() // SAdd otomatik tekrar eklemeyi engeller
+	err := r.client.SAdd(r.ctx, r.expiredKey, token).Err()
+	if err != nil {
+		return err
+	}
+
+	return r.client.Expire(r.ctx, r.expiredKey, ttl).Err()
 }
