@@ -1,0 +1,39 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Create .env file from secret
+      run: echo "${{ secrets.ENV_FILE }}" > .env
+
+    - name: Copy files to server
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "."
+        target: "/home/${{ secrets.USERNAME }}/crypto"
+
+    - name: SSH - Build and Restart Docker container
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          cd /home/${{ secrets.USERNAME }}/crypto
+          docker stop crypto || true
+          docker rm crypto || true
+          docker build -t crypto:latest .
+          docker run -d --env-file .env --name crypto -p 4242:4242 crypto:latest
