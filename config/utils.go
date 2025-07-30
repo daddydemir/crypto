@@ -1,19 +1,15 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 var path string
 
 func init() {
-	path = os.Getenv("ENV_PATH")
-	if path == "" {
-		path = "../config/envs/prod.env"
-	}
-
-	println("path: ", path)
+	path = ".env"
 }
 
 func Get(key string) string {

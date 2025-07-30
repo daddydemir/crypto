@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine
+FROM golang:1.22-alpine
 
 WORKDIR /app
 
@@ -6,10 +6,10 @@ COPY . .
 
 RUN go mod download
 
-RUN go build -o app ./cmd/main.go && mv app ./cmd/
+RUN go build -o app ./cmd/main.go && mv app ./cmd/ && mv .env /app/cmd/
 
 WORKDIR /app/cmd
 
-EXPOSE 8080
+EXPOSE 4242
 
 CMD [ "./app" ]
