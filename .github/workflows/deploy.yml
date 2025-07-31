@@ -37,4 +37,4 @@ jobs:
           docker stop crypto || true
           docker rm crypto || true
           docker build -t crypto:latest .
-          docker run -d --env-file .env --name crypto -p 4242:4242 crypto:latest
+          docker run -d --env-file .env --name crypto --network=host -p 4242:4242 crypto:latest
