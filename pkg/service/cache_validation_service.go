@@ -49,6 +49,11 @@ func (v *ValidateService) Validate() {
 			slog.Error("Validate:cacheService.GetList", "coin", i.Id, "error", err)
 			continue
 		}
+
+		if len(array) == 0 {
+			slog.Error("Validate:len(array) == 0", "coin", i.Id)
+			continue
+		}
 		_, histories := client.HistoryWithTime(i.Id, array[0].Date.Add(time.Hour*24).UnixNano(), time.Now().UnixNano())
 
 		if len(histories) == 0 {
