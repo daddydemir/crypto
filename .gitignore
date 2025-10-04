@@ -12,6 +12,6 @@ logs/
 
 *_test.go
 taskfile.yml
-todo.md
+roadmap.md
 
 task.md

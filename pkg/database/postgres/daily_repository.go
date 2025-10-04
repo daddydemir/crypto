@@ -35,7 +35,11 @@ func (r *postgresDailyRepository) FindTopSmallerByRate(start, end string) ([5]mo
 
 func (r *postgresDailyRepository) FindTopBiggerByRate(start, end string) ([5]model.DailyModel, error) {
 	var dailies [5]model.DailyModel
-	tx := r.db.Where("date between ? and ? and avg > 1 order by rate desc limit 5", start, end).Find(&dailies)
+	query := `date between ? and ? 
+		and avg > 1
+		and exists (select 1 from top_coins tc where tc.symbol = exchange_id and tc.rank < 41)
+		order by rate desc limit 5`
+	tx := r.db.Where(query, start, end).Find(&dailies)
 	return dailies, tx.Error
 }
 
