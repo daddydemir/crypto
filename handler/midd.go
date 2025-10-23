@@ -14,7 +14,18 @@ func setJSONContentType(next http.Handler) http.Handler {
 
 func setLogging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		slog.Info("endpoint hitted", "url", r.URL.RequestURI(), "method", r.Method, "IP", r.RemoteAddr)
+		ip := r.Header.Get("X-Forwarded-For")
+		if ip == "" {
+			ip = r.Header.Get("X-Real-IP")
+		}
+		if ip == "" {
+			ip = r.RemoteAddr
+		}
+		slog.Info("endpoint invoked",
+			"url", r.URL.RequestURI(),
+			"method", r.Method,
+			"IP", ip,
+		)
 		next.ServeHTTP(w, r)
 	})
 }
