@@ -3,6 +3,7 @@ package coin
 import (
 	"errors"
 	"github.com/daddydemir/crypto/pkg/cache"
+	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/daddydemir/crypto/pkg/service"
 	"gorm.io/gorm"
 	"time"
@@ -22,27 +23,22 @@ func NewPriceRepository(cacheService cache.Cache, service *service.CacheService,
 	}
 }
 
-func (p *PriceRepository) GetTopCoinIDs() ([]string, error) {
+func (p *PriceRepository) GetTopCoinIDs() ([]coincap.Coin, error) {
 	coins := p.service.GetCoins()
 	if len(coins) == 0 {
 		return nil, errors.New("coin list is empty")
 	}
-	response := make([]string, 0, len(coins))
-	for _, c := range coins {
-		response = append(response, c.Id)
-	}
-	return response, nil
+	return coins, nil
 }
 
 func (p *PriceRepository) GetLastNDaysPrices(ids []string, days int) (map[string][]float64, error) {
 	before := time.Now().Add(-time.Hour * 24 * time.Duration(days))
 
-	sql := `select lower(em.name) as exchange_id , dm.date, dm.first_price 
-		from daily_models dm, exchange_models em 
-		where lower(em.name) in (?)
-			and em.exchange_id = dm.exchange_id
+	sql := `select dm.exchange_id , dm.date, dm.first_price 
+		from daily_models dm 
+		where dm.exchange_id in (?)
 			and dm.date > ? 
-		order by em.name, dm.date`
+		order by dm.exchange_id, dm.date`
 	var results []Result
 	tx := p.database.Raw(sql, ids, before.Format("2006-01-02")).Scan(&results)
 	if tx.Error != nil {

@@ -1,6 +1,9 @@
 package coin
 
-import "github.com/daddydemir/crypto/pkg/domain/indicator"
+import (
+	"github.com/daddydemir/crypto/pkg/domain/indicator"
+	"strings"
+)
 
 type GetTopCoinsRSI struct {
 	priceRepo indicator.PriceRepository
@@ -15,9 +18,13 @@ func NewGetTopCoinsRSI(priceRepo indicator.PriceRepository) *GetTopCoinsRSI {
 }
 
 func (u *GetTopCoinsRSI) Execute() ([]RSIDTO, error) {
-	coinIDs, err := u.priceRepo.GetTopCoinIDs()
+	coins, err := u.priceRepo.GetTopCoinIDs()
 	if err != nil {
 		return nil, err
+	}
+	coinIDs := make([]string, 0, len(coins))
+	for _, c := range coins {
+		coinIDs = append(coinIDs, strings.ToLower(c.Symbol))
 	}
 	prices, err := u.priceRepo.GetLastNDaysPrices(coinIDs, 14)
 	if err != nil {
@@ -25,10 +32,12 @@ func (u *GetTopCoinsRSI) Execute() ([]RSIDTO, error) {
 	}
 
 	var dtos []RSIDTO
-	for _, id := range coinIDs {
+	for _, c := range coins {
+		id := strings.ToLower(c.Symbol)
 		rsi := u.rsiCalc.Calculate(prices[id])
 		dtos = append(dtos, RSIDTO{
 			CoinID: id,
+			Name:   c.Name,
 			RSI:    rsi,
 		})
 	}
