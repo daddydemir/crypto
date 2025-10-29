@@ -2,9 +2,11 @@ package handler
 
 import (
 	"github.com/daddydemir/crypto/config/database"
+	"github.com/daddydemir/crypto/pkg/application/coin"
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
 	"github.com/daddydemir/crypto/pkg/factory"
+	coinInfra "github.com/daddydemir/crypto/pkg/infrastructure/coin"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"net/http"
@@ -47,6 +49,9 @@ func Route() http.Handler {
 
 	subRouter.HandleFunc("/alert", alertPage).Methods(http.MethodGet)
 	subRouter.HandleFunc("/alert", alert).Methods(http.MethodPost)
+
+	coinHandler := NewCoinHandler(coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cache.GetCacheService()), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient())))
+	subRouter.HandleFunc("/topCoins", coinHandler.GetTopCoins).Methods(http.MethodGet)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
