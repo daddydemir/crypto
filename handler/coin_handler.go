@@ -28,7 +28,7 @@ func (h *CoinHandler) GetTopCoins(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func (h *CoinHandler) GetTopCoinsRSI(w http.ResponseWriter, r *http.Request) {
+func (h *CoinHandler) GetTopCoinsRSI(w http.ResponseWriter, _ *http.Request) {
 	data, err := h.rsi.Execute()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

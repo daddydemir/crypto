@@ -8,7 +8,7 @@ func NewRSI() *RSI {
 	return &RSI{}
 }
 
-func (r *RSI) Calculate(prices []float64) float64 {
+func (_ *RSI) Calculate(prices []float64) float64 {
 	if len(prices) < 14 {
 		return 0
 	}
