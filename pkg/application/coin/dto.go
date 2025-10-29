@@ -8,3 +8,8 @@ type StatsDTO struct {
 	Change24h float64 `json:"change24h"`
 	Change7d  float64 `json:"change7d"`
 }
+
+type RSIDTO struct {
+	CoinID string  `json:"coin_id"`
+	RSI    float64 `json:"rsi"`
+}
