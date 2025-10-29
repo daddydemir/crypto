@@ -10,6 +10,7 @@ type StatsDTO struct {
 }
 
 type RSIDTO struct {
+	Name   string  `json:"name"`
 	CoinID string  `json:"coin_id"`
 	RSI    float64 `json:"rsi"`
 }
