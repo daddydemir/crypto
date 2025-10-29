@@ -1,8 +1,10 @@
 package coincap
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/daddydemir/crypto/pkg/cache"
+	"log/slog"
 	"time"
 )
 
@@ -30,8 +32,32 @@ func (c *CachedClient) ListCoins() (error, []Coin) {
 	if err != nil {
 		return err, coins
 	}
-	err = c.cacheService.SetList(key, coins, time.Hour*4)
+
+	err = c.saveToBothCaches(key, coins)
+	if err != nil {
+		slog.Error("Failed to save to cache", "error", err)
+	}
+
 	return nil, coins
+}
+
+func (c *CachedClient) saveToBothCaches(key string, coins []Coin) error {
+	err := c.cacheService.SetList(key, coins, time.Hour*4)
+	if err != nil {
+		return fmt.Errorf("failed to save list to cache: %w", err)
+	}
+
+	jsonData, err := json.Marshal(coins)
+	if err != nil {
+		return fmt.Errorf("failed to marshal coins to JSON: %w", err)
+	}
+
+	err = c.cacheService.Set("coinList", jsonData)
+	if err != nil {
+		return fmt.Errorf("failed to save JSON to cache: %w", err)
+	}
+
+	return nil
 }
 
 func (c *CachedClient) HistoryWithId(s string) (error, []History) {
