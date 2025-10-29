@@ -50,8 +50,11 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/alert", alertPage).Methods(http.MethodGet)
 	subRouter.HandleFunc("/alert", alert).Methods(http.MethodPost)
 
-	coinHandler := NewCoinHandler(coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cache.GetCacheService()), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient())))
+	usecase := coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cache.GetCacheService()), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient()))
+	rsi := coin.NewGetTopCoinsRSI(coinInfra.NewPriceRepository(cache.GetCacheService(), serviceFactory.NewCacheService(), database.GetDatabaseService()))
+	coinHandler := NewCoinHandler(usecase, rsi)
 	subRouter.HandleFunc("/topCoins", coinHandler.GetTopCoins).Methods(http.MethodGet)
+	subRouter.HandleFunc("/topCoinsRSI", coinHandler.GetTopCoinsRSI).Methods(http.MethodGet)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
