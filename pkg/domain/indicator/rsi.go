@@ -1,6 +1,9 @@
 package indicator
 
-import "math"
+import (
+	"math"
+	"time"
+)
 
 type RSI struct{}
 
@@ -34,4 +37,9 @@ func (_ *RSI) Calculate(prices []float64) float64 {
 	rsi := 100 - (100 / (1 + rs))
 
 	return math.Round(rsi*100) / 100
+}
+
+type PriceData struct {
+	Date  time.Time
+	Price float64
 }

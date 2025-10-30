@@ -14,3 +14,8 @@ type RSIDTO struct {
 	CoinID string  `json:"coin_id"`
 	RSI    float64 `json:"rsi"`
 }
+
+type RSIHistoryDTO struct {
+	RSI  float64 `json:"rsi"`
+	Date string  `json:"date"`
+}
