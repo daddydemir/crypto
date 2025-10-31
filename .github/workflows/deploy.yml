@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
     - name: Copy files to server
       uses: appleboy/scp-action@v0.1.4
       with:
-        host: ${{ secrets.HOST }}
+        host: ${{ secrets.TEST_HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         source: "."

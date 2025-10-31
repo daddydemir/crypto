@@ -24,7 +24,7 @@ func init() {
 	checkAll(c)
 	checkOutOfThresholds(c)
 
-	c.Start()
+	//c.Start()
 }
 
 func dailyStart(task *cron.Cron) {
