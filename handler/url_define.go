@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/daddydemir/crypto/config/database"
+	"github.com/daddydemir/crypto/pkg/application/bollinger"
 	"github.com/daddydemir/crypto/pkg/application/coin"
 	"github.com/daddydemir/crypto/pkg/application/movingaverage"
 	"github.com/daddydemir/crypto/pkg/broker"
@@ -59,10 +60,13 @@ func Route() http.Handler {
 
 	movingAverageHandler := NewMovingAverageHandler(movingaverage.NewService(infrastructure.NewPriceHistoryRepository(cache.GetCacheService())))
 
+	bollingerHandler := NewBollingerHandler(bollinger.NewService(infrastructure.NewBollingerRepository(cache.GetCacheService())))
+
 	subRouter.HandleFunc("/topCoins", coinHandler.GetTopCoins).Methods(http.MethodGet)
 	subRouter.HandleFunc("/topCoinsRSI", coinHandler.GetTopCoinsRSI).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/rsi/history", coinHandler.GetCoinRSIHistory).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/moving-averages", movingAverageHandler.GetMovingAverages).Methods(http.MethodGet)
+	subRouter.HandleFunc("/coins/{id}/bollinger-bands", bollingerHandler.GetBollingerSeries).Methods(http.MethodGet)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
