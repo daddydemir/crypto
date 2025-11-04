@@ -43,7 +43,7 @@ func alertPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func alert(w http.ResponseWriter, r *http.Request) {
+func alertf(w http.ResponseWriter, r *http.Request) {
 	all, err := io.ReadAll(r.Body)
 	if err != nil {
 		slog.Error("ReadAll", "error", err)

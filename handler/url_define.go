@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/daddydemir/crypto/config/database"
+	"github.com/daddydemir/crypto/pkg/application/alert"
 	"github.com/daddydemir/crypto/pkg/application/bollinger"
 	"github.com/daddydemir/crypto/pkg/application/coin"
 	"github.com/daddydemir/crypto/pkg/application/movingaverage"
@@ -51,7 +52,7 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/weekly", getWeekly).Methods(http.MethodGet)
 
 	subRouter.HandleFunc("/alert", alertPage).Methods(http.MethodGet)
-	subRouter.HandleFunc("/alert", alert).Methods(http.MethodPost)
+	subRouter.HandleFunc("/alert", alertf).Methods(http.MethodPost)
 
 	usecase := coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cache.GetCacheService()), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient()))
 	rsi := coin.NewGetTopCoinsRSI(coinInfra.NewPriceRepository(cache.GetCacheService(), serviceFactory.NewCacheService(), database.GetDatabaseService()))
@@ -67,6 +68,13 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/coins/{id}/rsi/history", coinHandler.GetCoinRSIHistory).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/moving-averages", movingAverageHandler.GetMovingAverages).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/bollinger-bands", bollingerHandler.GetBollingerSeries).Methods(http.MethodGet)
+
+	alertHandler := NewAlertHandler(alert.NewService(infrastructure.NewAlertRepository(database.GetDatabaseService())))
+
+	subRouter.HandleFunc("/alerts", alertHandler.Create).Methods(http.MethodPost)
+	subRouter.HandleFunc("/alerts/{id}", alertHandler.Update).Methods(http.MethodPut)
+	subRouter.HandleFunc("/alerts/{id}", alertHandler.Delete).Methods(http.MethodDelete)
+	subRouter.HandleFunc("/alerts", alertHandler.List).Methods(http.MethodGet)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
