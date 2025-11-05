@@ -18,6 +18,7 @@ func (d *PostgresDB) Connect() {
 		panic(err)
 	}
 	D = db
+	db.Exec("SET TIMEZONE = 'Europe/Istanbul'")
 	slog.Info("Connect:gorm.Open", "message", "connection was successful")
 }
 
