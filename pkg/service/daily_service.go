@@ -54,7 +54,7 @@ func (d *DailyService) CreateDaily(morning bool) {
 		}
 		var save []model.DailyModel
 
-		for i := 0; i < len(dailies); i++ {
+		for i := 0; i < min(len(dailies), len(models)); i++ {
 			gecko = mergeMap(gecko, dailies[i].ToMap())
 			db = mergeMap(db, models[i].ToMap())
 		}
