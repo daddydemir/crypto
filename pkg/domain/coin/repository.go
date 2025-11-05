@@ -10,4 +10,5 @@ type HistoryRepository interface {
 
 type MarketRepository interface {
 	GetCurrentPrices() ([]Coin, error)
+	GetPriceChanges() ([]PriceResult, error)
 }

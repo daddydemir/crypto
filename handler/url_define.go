@@ -54,7 +54,7 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/alert", alertPage).Methods(http.MethodGet)
 	subRouter.HandleFunc("/alert", alertf).Methods(http.MethodPost)
 
-	usecase := coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cache.GetCacheService()), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient()))
+	usecase := coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cache.GetCacheService()), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient(), database.GetDatabaseService()))
 	rsi := coin.NewGetTopCoinsRSI(coinInfra.NewPriceRepository(cache.GetCacheService(), serviceFactory.NewCacheService(), database.GetDatabaseService()))
 	rsiHistory := coin.NewGetCoinRSIHistory(coinInfra.NewPriceRepository(cache.GetCacheService(), serviceFactory.NewCacheService(), database.GetDatabaseService()))
 	coinHandler := NewCoinHandler(usecase, rsi, rsiHistory)
