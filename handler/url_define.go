@@ -5,12 +5,14 @@ import (
 	"github.com/daddydemir/crypto/pkg/application/alert"
 	"github.com/daddydemir/crypto/pkg/application/bollinger"
 	"github.com/daddydemir/crypto/pkg/application/coin"
+	"github.com/daddydemir/crypto/pkg/application/exponentialma"
 	"github.com/daddydemir/crypto/pkg/application/movingaverage"
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
 	"github.com/daddydemir/crypto/pkg/factory"
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 	coinInfra "github.com/daddydemir/crypto/pkg/infrastructure/coin"
+	expoInfra "github.com/daddydemir/crypto/pkg/infrastructure/exponentialma"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"net/http"
@@ -60,6 +62,7 @@ func Route() http.Handler {
 	coinHandler := NewCoinHandler(usecase, rsi, rsiHistory)
 
 	movingAverageHandler := NewMovingAverageHandler(movingaverage.NewService(infrastructure.NewPriceHistoryRepository(cache.GetCacheService())))
+	exponentialHandler := NewExponentialMAHandler(exponentialma.NewService(expoInfra.NewPriceHistoryRepository(cache.GetCacheService())))
 
 	bollingerHandler := NewBollingerHandler(bollinger.NewService(infrastructure.NewBollingerRepository(cache.GetCacheService())))
 
@@ -67,6 +70,7 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/topCoinsRSI", coinHandler.GetTopCoinsRSI).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/rsi/history", coinHandler.GetCoinRSIHistory).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/moving-averages", movingAverageHandler.GetMovingAverages).Methods(http.MethodGet)
+	subRouter.HandleFunc("/coins/{id}/exponential-moving-averages", exponentialHandler.GetMovingAverages).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/bollinger-bands", bollingerHandler.GetBollingerSeries).Methods(http.MethodGet)
 
 	alertHandler := NewAlertHandler(alert.NewService(infrastructure.NewAlertRepository(database.GetDatabaseService())))
