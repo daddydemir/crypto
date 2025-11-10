@@ -44,3 +44,12 @@ func (h *MovingAverageHandler) GetMovingAverages(w http.ResponseWriter, r *http.
 
 	json.NewEncoder(w).Encode(result)
 }
+
+func (h *MovingAverageHandler) MovingAverageSignals(w http.ResponseWriter, r *http.Request) {
+	results, err := h.Service.GetMovingAverageSignals()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(results)
+}

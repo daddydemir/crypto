@@ -61,7 +61,7 @@ func Route() http.Handler {
 	rsiHistory := coin.NewGetCoinRSIHistory(coinInfra.NewPriceRepository(cache.GetCacheService(), serviceFactory.NewCacheService(), database.GetDatabaseService()))
 	coinHandler := NewCoinHandler(usecase, rsi, rsiHistory)
 
-	movingAverageHandler := NewMovingAverageHandler(movingaverage.NewService(infrastructure.NewPriceHistoryRepository(cache.GetCacheService())))
+	movingAverageHandler := NewMovingAverageHandler(movingaverage.NewService(infrastructure.NewPriceHistoryRepository(cache.GetCacheService()), infrastructure.NewPriceRepository(serviceFactory.NewCacheService(), cache.GetCacheService())))
 	exponentialHandler := NewExponentialMAHandler(exponentialma.NewService(expoInfra.NewPriceHistoryRepository(cache.GetCacheService())))
 
 	bollingerHandler := NewBollingerHandler(bollinger.NewService(infrastructure.NewBollingerRepository(cache.GetCacheService())))
@@ -69,6 +69,7 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/topCoins", coinHandler.GetTopCoins).Methods(http.MethodGet)
 	subRouter.HandleFunc("/topCoinsRSI", coinHandler.GetTopCoinsRSI).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/rsi/history", coinHandler.GetCoinRSIHistory).Methods(http.MethodGet)
+	subRouter.HandleFunc("/coins/moving-averages", movingAverageHandler.MovingAverageSignals).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/moving-averages", movingAverageHandler.GetMovingAverages).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/exponential-moving-averages", exponentialHandler.GetMovingAverages).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/bollinger-bands", bollingerHandler.GetBollingerSeries).Methods(http.MethodGet)
