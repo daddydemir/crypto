@@ -14,10 +14,19 @@ type PriceData struct {
 	Price float64
 }
 
+type Signal struct {
+	Id     string  `json:"id"`
+	Name   string  `json:"name"`
+	Symbol string  `json:"symbol"`
+	Price  float64 `json:"price"`
+	Points []Point `json:"points"`
+}
+
+// todo: refactor with window sliding
 func CalculateSeries(dates []time.Time, prices []float64) []Point {
 	var result []Point
 	for i := range prices {
-		if i < 99 {
+		if i < 98 {
 			continue
 		}
 		ma7 := mean(prices[i-6 : i+1])
