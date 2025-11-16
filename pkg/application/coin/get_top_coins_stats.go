@@ -33,12 +33,15 @@ func (u *GetTopCoinsStats) Execute() ([]StatsDTO, error) {
 
 	for _, c := range currentCoins {
 		results = append(results, StatsDTO{
-			ID:        c.ID,
-			Name:      c.Name,
-			Symbol:    c.Symbol,
-			Price:     c.PriceUSD,
-			Change24h: coinMap[strings.ToLower(c.Symbol)].Change24h,
-			Change7d:  coinMap[strings.ToLower(c.Symbol)].Change7d,
+			ID:                  c.ID,
+			Name:                c.Name,
+			Symbol:              c.Symbol,
+			Price:               c.PriceUSD,
+			Change24h:           coinMap[strings.ToLower(c.Symbol)].Change24h,
+			Change7d:            coinMap[strings.ToLower(c.Symbol)].Change7d,
+			Change30d:           coinMap[strings.ToLower(c.Symbol)].Change30d,
+			ArithmeticChange7d:  coinMap[strings.ToLower(c.Symbol)].ChangeArithmetic7d,
+			ArithmeticChange30d: coinMap[strings.ToLower(c.Symbol)].ChangeArithmetic30d,
 		})
 	}
 
