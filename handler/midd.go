@@ -3,7 +3,12 @@ package handler
 import (
 	"log/slog"
 	"net/http"
+	"slices"
 )
+
+var ignoredEndpoints = []string{
+	"/health",
+}
 
 func setJSONContentType(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -14,6 +19,10 @@ func setJSONContentType(next http.Handler) http.Handler {
 
 func setLogging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if slices.Contains(ignoredEndpoints, r.URL.Path) {
+			next.ServeHTTP(w, r)
+			return
+		}
 		ip := r.Header.Get("X-Forwarded-For")
 		if ip == "" {
 			ip = r.Header.Get("X-Real-IP")

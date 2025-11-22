@@ -31,6 +31,8 @@ func Route() http.Handler {
 	r.Use(setJSONContentType)
 	r.Use(setLogging)
 
+	r.HandleFunc("/health", healthHandler)
+
 	base := "/api/v1"
 
 	subRouter := r.PathPrefix(base).Subrouter()
@@ -83,4 +85,8 @@ func Route() http.Handler {
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
+}
+
+func healthHandler(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
