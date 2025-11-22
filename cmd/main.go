@@ -13,14 +13,16 @@ import (
 	"gorm.io/gorm"
 	"log/slog"
 	"net/http"
+	"time"
 )
 
 func main() {
 	initJobs(database.GetDatabaseService())
 
 	server := &http.Server{
-		Addr:    config.Get("PORT"),
-		Handler: handler.Route(),
+		ReadHeaderTimeout: 3 * time.Second,
+		Addr:              config.Get("PORT"),
+		Handler:           handler.Route(),
 	}
 
 	if config.Get("ENV") == "PROD" {
