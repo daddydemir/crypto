@@ -20,7 +20,7 @@ func FetchCandlesJob(service *binance.CandleService, cacheService service.CacheS
 	location, _ := time.LoadLocation("Turkey")
 	c := cron.New(cron.WithLocation(location))
 
-	yesterday := time.Now().Add(-2 * time.Hour * 24).UnixMilli()
+	yesterday := time.Now().Add(-1 * time.Hour * 24).UnixMilli()
 	today := time.Now().UnixMilli()
 
 	c.AddFunc("00 05 * * *", func() {
