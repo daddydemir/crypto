@@ -13,17 +13,20 @@ import (
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 	coinInfra "github.com/daddydemir/crypto/pkg/infrastructure/coin"
 	expoInfra "github.com/daddydemir/crypto/pkg/infrastructure/exponentialma"
+	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"net/http"
 )
 
 var serviceFactory *factory.ServiceFactory
+var db = database.GetDatabaseService()
+var cacheService = cache.GetCacheService()
+var cacheable *service.CacheService
 
 func init() {
-	serviceFactory = factory.NewServiceFactory(database.GetDatabaseService(), cache.GetCacheService(), broker.GetBrokerService())
-	alertService = serviceFactory.NewAlertService()
-	cacheService = serviceFactory.NewCacheService()
+	serviceFactory = factory.NewServiceFactory(db, cacheService, broker.GetBrokerService())
+	cacheable = serviceFactory.NewCacheService()
 }
 
 func Route() http.Handler {
@@ -36,37 +39,16 @@ func Route() http.Handler {
 	base := "/api/v1"
 
 	subRouter := r.PathPrefix(base).Subrouter()
-	subRouter.HandleFunc("/graph/rsi/{coin}", rsiHandler).Methods(http.MethodGet)
-	subRouter.HandleFunc("/graph/sma/{coin}", smaHandler).Methods(http.MethodGet)
-	subRouter.HandleFunc("/graph/ema/{coin}", emaHandler).Methods(http.MethodGet)
-	subRouter.HandleFunc("/graph/ma/{coin}", maHandler).Methods(http.MethodGet)
-	subRouter.HandleFunc("/graph/bollingerBands/{coin}", bollingerBandsHandler).Methods(http.MethodGet)
-	subRouter.HandleFunc("/graph/main", mainHandler).Methods(http.MethodGet)
 
-	subRouter.HandleFunc("/dailyStart", dailyStart).Methods(http.MethodGet)
-	subRouter.HandleFunc("/dailyEnd", dailyEnd).Methods(http.MethodGet)
-	subRouter.HandleFunc("/daily", daily).Methods(http.MethodGet)
-	subRouter.HandleFunc("/getDaily", getDaily).Methods(http.MethodPost)
-	subRouter.HandleFunc("/getDailyWithId", getDailyWithId).Methods(http.MethodPost)
-
-	subRouter.HandleFunc("/exchange", getExchange).Methods(http.MethodGet)
-	subRouter.HandleFunc("/getExchange", getExchangeFromDb).Methods(http.MethodGet)
-	subRouter.HandleFunc("/createExchange", createExchange).Methods(http.MethodGet)
-
-	subRouter.HandleFunc("/weekly", getWeekly).Methods(http.MethodGet)
-
-	subRouter.HandleFunc("/alert", alertPage).Methods(http.MethodGet)
-	subRouter.HandleFunc("/alert", alertf).Methods(http.MethodPost)
-
-	usecase := coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cache.GetCacheService()), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient(), database.GetDatabaseService()))
-	rsi := coin.NewGetTopCoinsRSI(coinInfra.NewPriceRepository(cache.GetCacheService(), serviceFactory.NewCacheService(), database.GetDatabaseService()))
-	rsiHistory := coin.NewGetCoinRSIHistory(coinInfra.NewPriceRepository(cache.GetCacheService(), serviceFactory.NewCacheService(), database.GetDatabaseService()))
+	usecase := coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cacheService), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient(), db))
+	rsi := coin.NewGetTopCoinsRSI(coinInfra.NewPriceRepository(cacheService, cacheable, db))
+	rsiHistory := coin.NewGetCoinRSIHistory(coinInfra.NewPriceRepository(cacheService, cacheable, db))
 	coinHandler := NewCoinHandler(usecase, rsi, rsiHistory)
 
-	movingAverageHandler := NewMovingAverageHandler(movingaverage.NewService(infrastructure.NewPriceHistoryRepository(cache.GetCacheService()), infrastructure.NewPriceRepository(serviceFactory.NewCacheService(), cache.GetCacheService())))
-	exponentialHandler := NewExponentialMAHandler(exponentialma.NewService(expoInfra.NewPriceHistoryRepository(cache.GetCacheService())))
+	movingAverageHandler := NewMovingAverageHandler(movingaverage.NewService(infrastructure.NewPriceHistoryRepository(cacheService), infrastructure.NewPriceRepository(cacheable, cacheService)))
+	exponentialHandler := NewExponentialMAHandler(exponentialma.NewService(expoInfra.NewPriceHistoryRepository(cacheService)))
 
-	bollingerHandler := NewBollingerHandler(bollinger.NewService(infrastructure.NewBollingerRepository(cache.GetCacheService())))
+	bollingerHandler := NewBollingerHandler(bollinger.NewService(infrastructure.NewBollingerRepository(cacheService)))
 
 	subRouter.HandleFunc("/topCoins", coinHandler.GetTopCoins).Methods(http.MethodGet)
 	subRouter.HandleFunc("/topCoinsRSI", coinHandler.GetTopCoinsRSI).Methods(http.MethodGet)
@@ -76,7 +58,7 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/coins/{id}/exponential-moving-averages", exponentialHandler.GetMovingAverages).Methods(http.MethodGet)
 	subRouter.HandleFunc("/coins/{id}/bollinger-bands", bollingerHandler.GetBollingerSeries).Methods(http.MethodGet)
 
-	alertHandler := NewAlertHandler(alert.NewService(infrastructure.NewAlertRepository(database.GetDatabaseService())))
+	alertHandler := NewAlertHandler(alert.NewService(infrastructure.NewAlertRepository(db)))
 
 	subRouter.HandleFunc("/alerts", alertHandler.Create).Methods(http.MethodPost)
 	subRouter.HandleFunc("/alerts/{id}", alertHandler.Update).Methods(http.MethodPut)

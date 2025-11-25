@@ -54,7 +54,7 @@ func (p *PriceRepository) GetLastNDaysPrices(ids []string, days int) (map[string
 
 func (p *PriceRepository) GetHistoricalPrices(coinID string, days int) ([]indicator.PriceData, error) {
 	list := make([]coincap.History, 0)
-	err := p.cacheService.GetList(coinID, &list, 0, int64(days))
+	err := p.cacheService.GetList(coinID, &list, int64(days), -1)
 	if err != nil {
 		return nil, err
 	}
@@ -67,4 +67,11 @@ func (p *PriceRepository) GetHistoricalPrices(coinID string, days int) ([]indica
 	}
 
 	return prices, nil
+}
+
+func (p *PriceRepository) GetHistoricalPricesDB(coinID string) ([]indicator.PriceData, error) {
+	sql := `select close_price as price, close_time::date as date from candles where symbol = upper(?) order by close_time`
+	var results []indicator.PriceData
+	p.database.Raw(sql, coinID).Scan(&results)
+	return results, nil
 }

@@ -21,8 +21,6 @@ func init() {
 	dailyStart(c)
 	dailyEnd(c)
 	validateCache(c)
-	checkAll(c)
-	checkOutOfThresholds(c)
 
 	//c.Start()
 }
@@ -70,23 +68,6 @@ func validateCache(task *cron.Cron) {
 		validateService.Validate()
 	})
 	printLog(entryID, err, "validateCache cron ID : ")
-}
-
-func checkAll(task *cron.Cron) {
-	spec := "30 05 * * *"
-	task.AddFunc(spec, func() {
-		averageService := serviceFactory.NewAverageService()
-		averageService.CheckAll(7, 25, 99)
-	})
-}
-
-func checkOutOfThresholds(task *cron.Cron) {
-	spec := "50 12 * * *"
-
-	_, _ = task.AddFunc(spec, func() {
-		bollingerService := serviceFactory.NewBollingerService()
-		bollingerService.CheckThresholds()
-	})
 }
 
 func printLog(entryID cron.EntryID, err error, message string) {
