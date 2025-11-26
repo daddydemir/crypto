@@ -14,7 +14,7 @@ func NewCandleRepository(db *gorm.DB) *CandleRepository {
 }
 
 func (r *CandleRepository) GetBySymbol(symbol string) ([]domain.Candle, error) {
-	query := `select symbol, close_time::date as time, close_price as close from candles where symbol = upper(?) order by close_time`
+	query := `select symbol, (close_time - interval '3 hours')::date as time, close_price as close from candles where symbol = upper(?) order by close_time`
 	var result []domain.Candle
 	err := r.db.Raw(query, symbol).Scan(&result).Error
 	return result, err
