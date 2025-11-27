@@ -41,6 +41,9 @@ func (e *ema) Calculate() []graphs.ChartModel {
 	response := make([]graphs.ChartModel, len(list), len(list))
 
 	s := NewSma(e.name, e.period)
+	if len(list) < e.period {
+		return nil
+	}
 	prev := s.createAvg(list[:e.period])
 	response[e.period] = graphs.ChartModel{
 		Value: prev,
