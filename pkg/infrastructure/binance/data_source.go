@@ -3,6 +3,7 @@ package binance
 import (
 	"encoding/json"
 	"fmt"
+	customHttp "github.com/daddydemir/crypto/config/http"
 	"github.com/daddydemir/crypto/pkg/domain/binance"
 	"github.com/daddydemir/crypto/pkg/infrastructure/cast"
 	"net/http"
@@ -15,7 +16,10 @@ type CandleDataSource struct {
 
 func NewDataSource() *CandleDataSource {
 	return &CandleDataSource{
-		client: &http.Client{Timeout: 10 * time.Second},
+		client: &http.Client{
+			Timeout:   10 * time.Second,
+			Transport: customHttp.NewLoggingMiddleware(nil),
+		},
 	}
 }
 
