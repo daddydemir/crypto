@@ -20,10 +20,10 @@ func FetchCandlesJob(service *binance.CandleService, cacheService service.CacheS
 	location, _ := time.LoadLocation("Turkey")
 	c := cron.New(cron.WithLocation(location))
 
-	yesterday := time.Now().Add(-1 * time.Hour * 24).UnixMilli()
-	today := time.Now().UnixMilli()
-
 	c.AddFunc("00 05 * * *", func() {
+		yesterday := time.Now().Add(-1 * time.Hour * 24).UnixMilli()
+		today := time.Now().UnixMilli()
+
 		coins := cacheService.GetCoins()
 		for _, coin := range coins {
 			if !slices.Contains(unnecessaryCoins, coin.Symbol) {
