@@ -36,5 +36,6 @@ jobs:
           cd /home/${{ secrets.USERNAME }}/crypto
           docker stop crypto || true
           docker rm crypto || true
+          docker image rm crypto:latest || true
           docker build -t crypto:latest .
           docker run -d --env-file .env -e TZ=Europe/Istanbul --name crypto --network=host -p 4242:4242 crypto:latest
