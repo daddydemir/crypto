@@ -13,7 +13,7 @@ import (
 var unnecessaryCoins = []string{
 	"USDT", "USDC", "USDE", "USD1", "USDf", "USDG", "USDY",
 	"BTCB", "WBTC", "EWTH", "WEETH", "STETH", "PYUSD", "WBNB",
-	"RLUSD", "XAUT", "FDUSD",
+	"RLUSD", "XAUT", "FDUSD", "USD0",
 }
 
 func FetchCandlesJob(service *binance.CandleService, cacheService service.CacheService) *cron.Cron {
@@ -21,7 +21,7 @@ func FetchCandlesJob(service *binance.CandleService, cacheService service.CacheS
 	c := cron.New(cron.WithLocation(location))
 
 	c.AddFunc("00 05 * * *", func() {
-		yesterday := time.Now().Add(-1 * time.Hour * 24).UnixMilli()
+		yesterday := time.Now().Add(-1 * time.Hour * 28).UnixMilli()
 		today := time.Now().UnixMilli()
 
 		coins := cacheService.GetCoins()
