@@ -17,6 +17,14 @@ type PriceData struct {
 	Price float64
 }
 
+type Signal struct {
+	Id     string  `json:"id"`
+	Name   string  `json:"name"`
+	Symbol string  `json:"symbol"`
+	Price  float64 `json:"price"`
+	Point  Point   `json:"point"`
+}
+
 func CalculateBollinger(prices []float64, dates []time.Time) []Point {
 	var result []Point
 	for i := 19; i < len(prices); i++ {

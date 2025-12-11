@@ -35,11 +35,11 @@ func (p *PriceRepository) GetTopCoinIDs() ([]coincap.Coin, error) {
 func (p *PriceRepository) GetLastNDaysPrices(ids []string, days int) (map[string][]float64, error) {
 	before := time.Now().Add(-time.Hour * 24 * time.Duration(days))
 
-	sql := `select dm.exchange_id , dm.date, dm.first_price 
-		from daily_models dm 
-		where dm.exchange_id in (?)
-			and dm.date > ? 
-		order by dm.exchange_id, dm.date`
+	sql := `select lower(c.symbol) as exchange_id , c.open_time as "date", c.close_price as first_price
+		from candles c 
+		where lower(c.symbol) in (?)
+			and c.open_time > ? 
+		order by c.symbol, c.open_time`
 	var results []Result
 	tx := p.database.Raw(sql, ids, before.Format("2006-01-02")).Scan(&results)
 	if tx.Error != nil {

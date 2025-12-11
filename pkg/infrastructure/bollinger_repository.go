@@ -18,7 +18,7 @@ func NewBollingerRepository(cacheService cache.Cache) *BollingerRepository {
 
 func (b *BollingerRepository) GetLastNDaysPricesWithDates(coinID string, days int) ([]bollinger.PriceData, error) {
 	list := make([]coincap.History, 0)
-	err := b.cacheService.GetList(coinID, &list, 0, int64(days))
+	err := b.cacheService.GetList(coinID, &list, int64(days), -1)
 	if err != nil {
 		return nil, err
 	}

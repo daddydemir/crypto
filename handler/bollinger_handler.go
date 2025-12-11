@@ -28,7 +28,7 @@ func (h *BollingerHandler) GetBollingerSeries(w http.ResponseWriter, r *http.Req
 	}
 
 	daysStr := r.URL.Query().Get("days")
-	days := 99
+	days := 0
 	if daysStr != "" {
 		if d, err := strconv.Atoi(daysStr); err == nil {
 			days = d
@@ -42,4 +42,13 @@ func (h *BollingerHandler) GetBollingerSeries(w http.ResponseWriter, r *http.Req
 	}
 
 	json.NewEncoder(w).Encode(series)
+}
+
+func (h *BollingerHandler) BollingerBandSignals(w http.ResponseWriter, r *http.Request) {
+	results, err := h.service.GetBollingerBandSignal()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	json.NewEncoder(w).Encode(results)
 }
