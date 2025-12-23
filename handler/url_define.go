@@ -7,6 +7,9 @@ import (
 	"github.com/daddydemir/crypto/pkg/application/coin"
 	"github.com/daddydemir/crypto/pkg/application/exponentialma"
 	"github.com/daddydemir/crypto/pkg/application/movingaverage"
+	"github.com/daddydemir/crypto/pkg/atr/application"
+	atrInfra "github.com/daddydemir/crypto/pkg/atr/infrastructure"
+	"github.com/daddydemir/crypto/pkg/atr/rest"
 	binanceCandleApp "github.com/daddydemir/crypto/pkg/binance/application"
 	binanceCandleInfra "github.com/daddydemir/crypto/pkg/binance/infrastructure"
 	binanceCandleRest "github.com/daddydemir/crypto/pkg/binance/rest"
@@ -72,6 +75,9 @@ func Route() http.Handler {
 
 	binanceCandleHandler := binanceCandleRest.NewCandleHandler(binanceCandleApp.NewGetCandlesQuery(binanceCandleInfra.NewCandleRepository(db)))
 	subRouter.HandleFunc("/binance/coin/{symbol}", binanceCandleHandler.GetCandles).Methods(http.MethodGet)
+
+	atrHandler := rest.NewAtrHandler(application.NewPointService(atrInfra.NewAtrRepository(db)))
+	subRouter.HandleFunc("/atr/coin/{symbol}", atrHandler.Points).Methods(http.MethodGet)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
