@@ -19,6 +19,9 @@ import (
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 	coinInfra "github.com/daddydemir/crypto/pkg/infrastructure/coin"
 	expoInfra "github.com/daddydemir/crypto/pkg/infrastructure/exponentialma"
+	macdApp "github.com/daddydemir/crypto/pkg/macd/application"
+	macdInfra "github.com/daddydemir/crypto/pkg/macd/infrastructure"
+	macdHandler "github.com/daddydemir/crypto/pkg/macd/rest"
 	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -78,6 +81,9 @@ func Route() http.Handler {
 
 	atrHandler := rest.NewAtrHandler(application.NewPointService(atrInfra.NewAtrRepository(db)))
 	subRouter.HandleFunc("/atr/coin/{symbol}", atrHandler.Points).Methods(http.MethodGet)
+
+	macd := macdHandler.NewMACDHandler(macdApp.NewMACDApplicationService(macdInfra.NewInMemoryMACDRepository(), macdInfra.NewDatabasePriceRepository(db)))
+	macd.RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
