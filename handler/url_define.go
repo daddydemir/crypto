@@ -15,6 +15,9 @@ import (
 	binanceCandleRest "github.com/daddydemir/crypto/pkg/binance/rest"
 	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
+	donchianApp "github.com/daddydemir/crypto/pkg/channels/donchian/app"
+	donchianInfra "github.com/daddydemir/crypto/pkg/channels/donchian/infra"
+	donchianHandler "github.com/daddydemir/crypto/pkg/channels/donchian/rest"
 	"github.com/daddydemir/crypto/pkg/factory"
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 	coinInfra "github.com/daddydemir/crypto/pkg/infrastructure/coin"
@@ -78,6 +81,8 @@ func Route() http.Handler {
 
 	atrHandler := rest.NewAtrHandler(application.NewPointService(atrInfra.NewAtrRepository(db)))
 	subRouter.HandleFunc("/atr/coin/{symbol}", atrHandler.Points).Methods(http.MethodGet)
+
+	donchianHandler.NewDonchianHandler(donchianApp.NewDonchianApp(donchianInfra.NewDonchianRepository(db))).RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
