@@ -23,14 +23,17 @@ func (h *DonchianHandler) DonchianChannel(w http.ResponseWriter, r *http.Request
 	symbol := mux.Vars(r)["symbol"]
 	if symbol == "" {
 		http.Error(w, "symbol is required", http.StatusBadRequest)
+		return
 	}
 
 	series, err := h.app.Series(symbol)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	if len(series) == 0 {
 		http.Error(w, "no data found", http.StatusNotFound)
+		return
 	}
 	json.NewEncoder(w).Encode(series)
 }

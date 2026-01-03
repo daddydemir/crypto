@@ -28,11 +28,11 @@ func CalculateDonchian(data []DonchianData) ([]DonchianChannel, error) {
 
 	result := make([]DonchianChannel, len(data)-20)
 	for i := 0; i < len(data)-20; i++ {
-		min, max := getMinAndMaxWithPeriod(data[i:i+20], 20)
+		lowest, highest := getMinAndMaxWithPeriod(data[i:i+20], 20)
 		result[i] = DonchianChannel{
-			Upper:  max,
-			Lower:  min,
-			Middle: (max + min) / 2,
+			Upper:  highest,
+			Lower:  lowest,
+			Middle: (highest + lowest) / 2,
 			Date:   data[i+20].Date.Format("2006-01-02"),
 			Price:  data[i+20].Close,
 		}
@@ -42,14 +42,14 @@ func CalculateDonchian(data []DonchianData) ([]DonchianChannel, error) {
 }
 
 func getMinAndMaxWithPeriod(array []DonchianData, period int) (float64, float64) {
-	min, max := array[0].Min, array[0].Max
+	lowest, highest := array[0].Min, array[0].Max
 	for i := 1; i < period; i++ {
-		if array[i].Min < min {
-			min = array[i].Min
+		if array[i].Min < lowest {
+			lowest = array[i].Min
 		}
-		if array[i].Max > max {
-			max = array[i].Max
+		if array[i].Max > highest {
+			highest = array[i].Max
 		}
 	}
-	return min, max
+	return lowest, highest
 }
