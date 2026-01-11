@@ -1,4 +1,4 @@
-package handler
+package rest
 
 import (
 	"encoding/json"
@@ -8,17 +8,17 @@ import (
 	"strconv"
 )
 
-type CoinHandler struct {
+type Handler struct {
 	usecase    *coin.GetTopCoinsStats
 	rsi        *coin.GetTopCoinsRSI
 	rsiHistory *coin.GetCoinRSIHistory
 }
 
-func NewCoinHandler(usecase *coin.GetTopCoinsStats, rsi *coin.GetTopCoinsRSI, rsiHistory *coin.GetCoinRSIHistory) *CoinHandler {
-	return &CoinHandler{usecase: usecase, rsi: rsi, rsiHistory: rsiHistory}
+func NewHandler(usecase *coin.GetTopCoinsStats, rsi *coin.GetTopCoinsRSI, rsiHistory *coin.GetCoinRSIHistory) *Handler {
+	return &Handler{usecase: usecase, rsi: rsi, rsiHistory: rsiHistory}
 }
 
-func (h *CoinHandler) GetTopCoins(w http.ResponseWriter, _ *http.Request) {
+func (h *Handler) TopCoins(w http.ResponseWriter, _ *http.Request) {
 	coins, err := h.usecase.Execute()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -31,7 +31,7 @@ func (h *CoinHandler) GetTopCoins(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func (h *CoinHandler) GetTopCoinsRSI(w http.ResponseWriter, _ *http.Request) {
+func (h *Handler) TopCoinsRSI(w http.ResponseWriter, _ *http.Request) {
 	data, err := h.rsi.Execute()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -44,7 +44,7 @@ func (h *CoinHandler) GetTopCoinsRSI(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func (h *CoinHandler) GetCoinRSIHistory(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CoinHistory(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	coinID := vars["id"]
 	daysStr := r.URL.Query().Get("days")

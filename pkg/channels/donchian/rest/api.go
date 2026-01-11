@@ -7,19 +7,19 @@ import (
 	"net/http"
 )
 
-type DonchianHandler struct {
-	app *app.DonchianApp
+type Handler struct {
+	app *app.App
 }
 
-func NewDonchianHandler(app *app.DonchianApp) *DonchianHandler {
-	return &DonchianHandler{app: app}
+func NewHandler(app *app.App) *Handler {
+	return &Handler{app: app}
 }
 
-func (h *DonchianHandler) RegisterRoutes(router *mux.Router) {
+func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/donchian/coin/{symbol}", h.DonchianChannel)
 }
 
-func (h *DonchianHandler) DonchianChannel(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DonchianChannel(w http.ResponseWriter, r *http.Request) {
 	symbol := mux.Vars(r)["symbol"]
 	if symbol == "" {
 		http.Error(w, "symbol is required", http.StatusBadRequest)

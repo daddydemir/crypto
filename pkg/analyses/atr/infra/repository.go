@@ -1,22 +1,22 @@
-package infrastructure
+package infra
 
 import (
-	"github.com/daddydemir/crypto/pkg/atr/domain"
+	"github.com/daddydemir/crypto/pkg/analyses/atr/domain"
 	"gorm.io/gorm"
 	"strings"
 )
 
-type AtrRepository struct {
+type Repository struct {
 	db *gorm.DB
 }
 
-func NewAtrRepository(db *gorm.DB) *AtrRepository {
-	return &AtrRepository{
+func NewRepository(db *gorm.DB) *Repository {
+	return &Repository{
 		db: db,
 	}
 }
 
-func (r *AtrRepository) GetPointsBySymbol(symbol string) ([]domain.AtrPoint, error) {
+func (r *Repository) GetPointsBySymbol(symbol string) ([]domain.AtrPoint, error) {
 	query := `
 select c.symbol
 	, c.high_price as current_high

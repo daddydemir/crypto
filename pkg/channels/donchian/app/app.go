@@ -2,15 +2,15 @@ package app
 
 import "github.com/daddydemir/crypto/pkg/channels/donchian/domain"
 
-type DonchianApp struct {
+type App struct {
 	repo domain.Repository
 }
 
-func NewDonchianApp(repo domain.Repository) *DonchianApp {
-	return &DonchianApp{repo: repo}
+func NewApp(repo domain.Repository) *App {
+	return &App{repo: repo}
 }
 
-func (d *DonchianApp) Series(symbol string) ([]domain.DonchianChannel, error) {
+func (d *App) Series(symbol string) ([]domain.DonchianChannel, error) {
 
 	datas, err := d.repo.GetRawDataWithSymbol(symbol)
 	if err != nil {

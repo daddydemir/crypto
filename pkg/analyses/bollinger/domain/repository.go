@@ -1,5 +1,5 @@
-package bollinger
+package domain
 
-type PriceHistoryRepository interface {
+type Repository interface {
 	GetLastNDaysPricesWithDates(coinID string, days int) ([]PriceData, error)
 }

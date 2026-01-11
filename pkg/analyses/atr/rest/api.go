@@ -2,28 +2,28 @@ package rest
 
 import (
 	"encoding/json"
-	"github.com/daddydemir/crypto/pkg/atr/application"
+	"github.com/daddydemir/crypto/pkg/analyses/atr/app"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
-type AtrHandler struct {
-	service *application.PointService
+type Handler struct {
+	app *app.App
 }
 
-func NewAtrHandler(service *application.PointService) *AtrHandler {
-	return &AtrHandler{
-		service: service,
+func NewHandler(app *app.App) *Handler {
+	return &Handler{
+		app: app,
 	}
 }
 
-func (handler *AtrHandler) Points(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Points(w http.ResponseWriter, r *http.Request) {
 	symbol := mux.Vars(r)["symbol"]
 	if symbol == "" {
 		http.Error(w, "symbol is required", http.StatusBadRequest)
 	}
 
-	points, err := handler.service.GetPoints(symbol)
+	points, err := h.app.GetPoints(symbol)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -32,4 +32,8 @@ func (handler *AtrHandler) Points(w http.ResponseWriter, r *http.Request) {
 	} else {
 		json.NewEncoder(w).Encode(points)
 	}
+}
+
+func (h *Handler) RegisterRoutes(router *mux.Router) {
+	router.HandleFunc("/adi/coin/{symbol}", h.Points)
 }

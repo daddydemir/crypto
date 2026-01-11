@@ -5,15 +5,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type DonchianRepository struct {
+type Repository struct {
 	db *gorm.DB
 }
 
-func NewDonchianRepository(db *gorm.DB) *DonchianRepository {
-	return &DonchianRepository{db: db}
+func NewRepository(db *gorm.DB) *Repository {
+	return &Repository{db: db}
 }
 
-func (r *DonchianRepository) GetRawDataWithSymbol(symbol string) ([]domain.DonchianData, error) {
+func (r *Repository) GetRawDataWithSymbol(symbol string) ([]domain.DonchianData, error) {
 
 	query := `
 select open_time::date as date, low_price as min, high_price as max, close_price as close

@@ -1,4 +1,4 @@
-package bollinger
+package domain
 
 import (
 	"math"
