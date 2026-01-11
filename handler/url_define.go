@@ -2,6 +2,9 @@ package handler
 
 import (
 	"github.com/daddydemir/crypto/config/database"
+	adiApp "github.com/daddydemir/crypto/pkg/analyses/adi/app"
+	adiInfra "github.com/daddydemir/crypto/pkg/analyses/adi/infra"
+	adiRest "github.com/daddydemir/crypto/pkg/analyses/adi/rest"
 	"github.com/daddydemir/crypto/pkg/application/alert"
 	"github.com/daddydemir/crypto/pkg/application/bollinger"
 	"github.com/daddydemir/crypto/pkg/application/coin"
@@ -83,6 +86,7 @@ func Route() http.Handler {
 	subRouter.HandleFunc("/atr/coin/{symbol}", atrHandler.Points).Methods(http.MethodGet)
 
 	donchianHandler.NewDonchianHandler(donchianApp.NewDonchianApp(donchianInfra.NewDonchianRepository(db))).RegisterRoutes(subRouter)
+	adiRest.NewHandler(adiApp.NewApp(adiInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
