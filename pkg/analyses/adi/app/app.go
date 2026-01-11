@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/daddydemir/crypto/pkg/analyses/adi/domain"
 )
 
@@ -15,20 +16,15 @@ func NewApp(repo domain.Repository) *App {
 }
 
 func (a *App) GetADISeries(coinID string) ([]domain.Point, error) {
-	// Get price data
 	priceData, err := a.repo.GetRawDataWithSymbol(coinID)
 	if err != nil {
 		return nil, err
 	}
-	//
-	//if len(priceData) < 14+1 {
-	//	return &domain.Series{
-	//		CoinID: coinID,
-	//		Points: []domain.Point{},
-	//	}, nil
-	//}
 
-	// Calculate ADI points
+	if len(priceData) < 14+1 {
+		return nil, fmt.Errorf("not enough data to calculate ADI")
+	}
+
 	points := domain.CalculateADI(priceData, 14)
 	return points, nil
 }

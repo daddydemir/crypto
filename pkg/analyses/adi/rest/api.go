@@ -17,7 +17,7 @@ func NewHandler(app *app.App) *Handler {
 	}
 }
 
-func (h *Handler) GetADI(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ADI(w http.ResponseWriter, r *http.Request) {
 	symbol := mux.Vars(r)["symbol"]
 	if symbol == "" {
 		http.Error(w, "symbol is required", http.StatusBadRequest)
@@ -39,5 +39,5 @@ func (h *Handler) GetADI(w http.ResponseWriter, r *http.Request) {
 
 // RegisterRoutes registers ADI routes
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/adi/coin/{symbol}", h.GetADI)
+	router.HandleFunc("/adi/coin/{symbol}", h.ADI)
 }
