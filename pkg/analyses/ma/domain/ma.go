@@ -1,4 +1,4 @@
-package movingaverage
+package domain
 
 import "time"
 
@@ -22,7 +22,6 @@ type Signal struct {
 	Points []Point `json:"points"`
 }
 
-// todo: refactor with window sliding
 func CalculateSeries(dates []time.Time, prices []float64) []Point {
 	var result []Point
 	for i := range prices {

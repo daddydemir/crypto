@@ -1,4 +1,4 @@
-package exponentialma
+package domain
 
 import (
 	"time"

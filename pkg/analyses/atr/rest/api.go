@@ -35,5 +35,5 @@ func (h *Handler) Points(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/adi/coin/{symbol}", h.Points)
+	router.HandleFunc("/atr/coin/{symbol}", h.Points)
 }

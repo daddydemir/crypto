@@ -1,24 +1,24 @@
-package handler
+package rest
 
 import (
 	"encoding/json"
-	"github.com/daddydemir/crypto/pkg/application/exponentialma"
+	"github.com/daddydemir/crypto/pkg/analyses/ema/app"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 )
 
-type ExponentialMAHandler struct {
-	service *exponentialma.Service
+type Handler struct {
+	app *app.App
 }
 
-func NewExponentialMAHandler(service *exponentialma.Service) *ExponentialMAHandler {
-	return &ExponentialMAHandler{
-		service: service,
+func NewHandler(app *app.App) *Handler {
+	return &Handler{
+		app: app,
 	}
 }
 
-func (h *ExponentialMAHandler) GetMovingAverages(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) MovingAverages(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	coinID := vars["id"]
 
@@ -36,11 +36,15 @@ func (h *ExponentialMAHandler) GetMovingAverages(w http.ResponseWriter, r *http.
 		}
 	}
 
-	result, err := h.service.GetMovingAverageSeries(coinID, days)
+	result, err := h.app.GetMovingAverageSeries(coinID, days)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	json.NewEncoder(w).Encode(result)
+}
+
+func (h *Handler) RegisterRoutes(router *mux.Router) {
+	router.HandleFunc("/coins/{id}/exponential-moving-averages", h.MovingAverages)
 }
