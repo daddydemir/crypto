@@ -1,17 +1,9 @@
 package domain
 
+import "github.com/daddydemir/crypto/pkg/remote/coincap"
+
 type Repository interface {
-	GetTopCoins(limit int) ([]Coin, error)
-	GetPriceAt(coinID string, date int) (float64, error)
-	GetCurrentPrices() ([]Coin, error)
-	GetPriceChanges() ([]PriceResult, error)
-}
-
-type HistoryRepository interface {
-	GetPriceAt(coinID string, date int) (float64, error)
-}
-
-type MarketRepository interface {
-	GetCurrentPrices() ([]Coin, error)
-	GetPriceChanges() ([]PriceResult, error)
+	GetLastNDaysPrices(ids []string, days int) (map[string][]float64, error)
+	GetTopCoinIDs() ([]coincap.Coin, error)
+	GetHistoricalPrices(coinID string, days int) ([]PriceData, error)
 }

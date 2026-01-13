@@ -2,37 +2,37 @@ package rest
 
 import (
 	"encoding/json"
-	"github.com/daddydemir/crypto/pkg/application/coin"
+	"github.com/daddydemir/crypto/pkg/analyses/rsi/app"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 )
 
 type Handler struct {
-	usecase    *coin.GetTopCoinsStats
-	rsi        *coin.GetTopCoinsRSI
-	rsiHistory *coin.GetCoinRSIHistory
+	app *app.App
 }
 
-func NewHandler(usecase *coin.GetTopCoinsStats, rsi *coin.GetTopCoinsRSI, rsiHistory *coin.GetCoinRSIHistory) *Handler {
-	return &Handler{usecase: usecase, rsi: rsi, rsiHistory: rsiHistory}
+func NewHandler(app *app.App) *Handler {
+	return &Handler{
+		app: app,
+	}
 }
 
-func (h *Handler) TopCoins(w http.ResponseWriter, _ *http.Request) {
-	coins, err := h.usecase.Execute()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = json.NewEncoder(w).Encode(coins)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
+//func (h *Handler) TopCoins(w http.ResponseWriter, _ *http.Request) {
+//	coins, err := h.usecase.Execute()
+//	if err != nil {
+//		http.Error(w, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//	err = json.NewEncoder(w).Encode(coins)
+//	if err != nil {
+//		http.Error(w, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//}
 
 func (h *Handler) TopCoinsRSI(w http.ResponseWriter, _ *http.Request) {
-	data, err := h.rsi.Execute()
+	data, err := h.app.TopCoinsRSI()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -56,11 +56,16 @@ func (h *Handler) CoinHistory(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, err := h.rsiHistory.Execute(coinID, days)
+	data, err := h.app.CoinRSIHistory(coinID, days)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	json.NewEncoder(w).Encode(data)
+}
+
+func (h *Handler) RegisterRoutes(router *mux.Router) {
+	router.HandleFunc("/topCoinsRSI", h.TopCoinsRSI)
+	router.HandleFunc("/coins/{id}/rsi/history", h.CoinHistory)
 }

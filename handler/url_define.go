@@ -4,7 +4,7 @@ import (
 	"github.com/daddydemir/crypto/config/database"
 	adiApp "github.com/daddydemir/crypto/pkg/analyses/adi/app"
 	adiInfra "github.com/daddydemir/crypto/pkg/analyses/adi/infra"
-	adiRest "github.com/daddydemir/crypto/pkg/analyses/adi/rest"
+	adiHandler "github.com/daddydemir/crypto/pkg/analyses/adi/rest"
 	atrApp "github.com/daddydemir/crypto/pkg/analyses/atr/app"
 	atrInfra "github.com/daddydemir/crypto/pkg/analyses/atr/infra"
 	atrHandler "github.com/daddydemir/crypto/pkg/analyses/atr/rest"
@@ -14,6 +14,9 @@ import (
 	maApp "github.com/daddydemir/crypto/pkg/analyses/ma/app"
 	maInfra "github.com/daddydemir/crypto/pkg/analyses/ma/infra"
 	maHandler "github.com/daddydemir/crypto/pkg/analyses/ma/rest"
+	rsiApp "github.com/daddydemir/crypto/pkg/analyses/rsi/app"
+	rsiInfra "github.com/daddydemir/crypto/pkg/analyses/rsi/infra"
+	rsiHandler "github.com/daddydemir/crypto/pkg/analyses/rsi/rest"
 
 	emaApp "github.com/daddydemir/crypto/pkg/analyses/ema/app"
 	emaInfra "github.com/daddydemir/crypto/pkg/analyses/ema/infra"
@@ -58,16 +61,11 @@ func Route() http.Handler {
 
 	subRouter := r.PathPrefix(base).Subrouter()
 
-	//usecase := coin.NewGetTopCoinsStats(coinInfra.NewCacheHistoryRepository(cacheService), coinInfra.NewCoinGeckoMarketRepository(serviceFactory.NewCachedCoinCapClient(), db))
-	//rsi := coin.NewGetTopCoinsRSI(coinInfra.NewPriceRepository(cacheService, cacheable, db))
-	//rsiHistory := coin.NewGetCoinRSIHistory(coinInfra.NewPriceRepository(cacheService, cacheable, db))
-	//coinHandler := NewCoinHandler(usecase, rsi, rsiHistory)
-
 	priceRepo := infrastructure.NewPriceRepository(cacheable, cacheService)
 
 	//subRouter.HandleFunc("/topCoins", coinHandler.GetTopCoins).Methods(http.MethodGet)
-	//subRouter.HandleFunc("/topCoinsRSI", coinHandler.GetTopCoinsRSI).Methods(http.MethodGet)
-	//subRouter.HandleFunc("/coins/{id}/rsi/history", coinHandler.GetCoinRSIHistory).Methods(http.MethodGet)
+
+	rsiHandler.NewHandler(rsiApp.NewApp(rsiInfra.NewRepository(cacheService, cacheable, db))).RegisterRoutes(subRouter)
 
 	maHandler.NewHandler(maApp.NewApp(maInfra.NewRepository(cacheService), priceRepo)).RegisterRoutes(subRouter)
 
@@ -89,7 +87,7 @@ func Route() http.Handler {
 
 	donchianHandler.NewHandler(donchianApp.NewApp(donchianInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
-	adiRest.NewHandler(adiApp.NewApp(adiInfra.NewRepository(db))).RegisterRoutes(subRouter)
+	adiHandler.NewHandler(adiApp.NewApp(adiInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
