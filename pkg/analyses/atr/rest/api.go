@@ -21,14 +21,17 @@ func (h *Handler) Points(w http.ResponseWriter, r *http.Request) {
 	symbol := mux.Vars(r)["symbol"]
 	if symbol == "" {
 		http.Error(w, "symbol is required", http.StatusBadRequest)
+		return
 	}
 
 	points, err := h.app.GetPoints(symbol)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	if len(points) == 0 {
 		http.Error(w, "no points found", http.StatusNotFound)
+		return
 	} else {
 		json.NewEncoder(w).Encode(points)
 	}

@@ -45,7 +45,7 @@ func (h *Handler) MovingAverages(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-func (h *Handler) MovingAverageSignals(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) MovingAverageSignals(w http.ResponseWriter, _ *http.Request) {
 	results, err := h.app.GetMovingAverageSignals()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
