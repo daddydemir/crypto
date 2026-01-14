@@ -8,7 +8,7 @@ Crypto projesi coingecko'nun API'lerini kullanarak günlük, haftalık ve aylık
 
 ### ÖZET
 ----
-Coingecko'nun ücretsiz olarak sunmuş olduğu API'a günde iki kez istek atıp verileri kendi veritabanıma kaydediyorum. Günde iki kez çalışması için farklı endpointler var ve bu endpointlere cron job sayesinde otomatik olarak istek atıyorum. İlk istek attığım zaman gece 00.15
+Coingecko'nun ücretsiz olarak sunmuş olduğu API'alert günde iki kez istek atıp verileri kendi veritabanıma kaydediyorum. Günde iki kez çalışması için farklı endpointler var ve bu endpointlere cron job sayesinde otomatik olarak istek atıyorum. İlk istek attığım zaman gece 00.15
 ikinci istek ise 23.45. İkinci istek attığımda gelen veriler ile ilk istekteki veriler arasında bazı hesaplamalar yaparak veritabanına kayıt işlemini gerçekleştiriyorum. Aynı zamanda elde ettiğim hesaplamalar sonucunda bazı coinleri telefonuma göndermesi için kuyruğa atıyorum.
 Aynı zamanda küçük bir python scripti sayesinde başka bir web sitesinde RSI grafiğini çekip resim olarak da teleonuma göndermesi için bir çalışma yaptım ancak o bu repo içerinde dahil değil. Henüz onu github'da paylaşmadım, eğer paylaşırsam buraya bir referans verebilirim.
 
