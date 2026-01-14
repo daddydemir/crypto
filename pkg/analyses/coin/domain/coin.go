@@ -1,20 +1,22 @@
-package coin
+package domain
 
-import "time"
+type StatsDTO struct {
+	ID                  string  `json:"id"`
+	Name                string  `json:"name"`
+	Symbol              string  `json:"symbol"`
+	Price               float64 `json:"price"`
+	Change24h           float64 `json:"change24h"`
+	Change7d            float64 `json:"change7d"`
+	Change30d           float64 `json:"change30d"`
+	ArithmeticChange7d  float64 `json:"arithmeticChange7d"`
+	ArithmeticChange30d float64 `json:"arithmeticChange30d"`
+}
 
 type Coin struct {
 	ID       string
 	Name     string
 	Symbol   string
 	PriceUSD float64
-}
-
-type ChangeStats struct {
-	CoinID    string
-	Current   float64
-	Change24h float64
-	Change7d  float64
-	UpdatedAt time.Time
 }
 
 type PriceResult struct {

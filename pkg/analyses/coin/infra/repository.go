@@ -1,28 +1,28 @@
-package coin
+package infra
 
 import (
-	"github.com/daddydemir/crypto/pkg/domain/coin"
+	"github.com/daddydemir/crypto/pkg/analyses/coin/domain"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"gorm.io/gorm"
 )
 
-type MarketRepository struct {
-	api      *coincap.CachedClient
-	database *gorm.DB
+type Repository struct {
+	api *coincap.CachedClient
+	db  *gorm.DB
 }
 
-func NewCoinGeckoMarketRepository(api *coincap.CachedClient, db *gorm.DB) *MarketRepository {
-	return &MarketRepository{api: api, database: db}
+func NewRepository(api *coincap.CachedClient, db *gorm.DB) *Repository {
+	return &Repository{api: api, db: db}
 }
 
-func (r *MarketRepository) GetCurrentPrices() ([]coin.Coin, error) {
+func (r *Repository) GetCurrentPrices() ([]domain.Coin, error) {
 	err, coins := r.api.ListCoins()
 	if err != nil {
 		return nil, err
 	}
-	response := make([]coin.Coin, 0, 100)
+	response := make([]domain.Coin, 0, 100)
 	for _, c := range coins {
-		response = append(response, coin.Coin{
+		response = append(response, domain.Coin{
 			ID:       c.Id,
 			Name:     c.Name,
 			Symbol:   c.Symbol,
@@ -32,8 +32,8 @@ func (r *MarketRepository) GetCurrentPrices() ([]coin.Coin, error) {
 	return response, nil
 }
 
-func (r *MarketRepository) GetPriceChanges() ([]coin.PriceResult, error) {
-	var results []coin.PriceResult
+func (r *Repository) GetPriceChanges() ([]domain.PriceResult, error) {
+	var results []domain.PriceResult
 	query := `WITH price_data AS (
         SELECT 
             exchange_id,
@@ -105,7 +105,7 @@ func (r *MarketRepository) GetPriceChanges() ([]coin.PriceResult, error) {
 	LEFT JOIN month_ago_prices m ON c.exchange_id = m.exchange_id
 	LEFT JOIN avg_7_days_price avg_7 ON c.exchange_id = avg_7.exchange_id
 	LEFT JOIN avg_30_days_price avg_30 ON c.exchange_id = avg_30.exchange_id`
-	err := r.database.Raw(query).Scan(&results).Error
+	err := r.db.Raw(query).Scan(&results).Error
 	return results, err
 
 }

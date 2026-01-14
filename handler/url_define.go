@@ -5,23 +5,29 @@ import (
 	adiApp "github.com/daddydemir/crypto/pkg/analyses/adi/app"
 	adiInfra "github.com/daddydemir/crypto/pkg/analyses/adi/infra"
 	adiHandler "github.com/daddydemir/crypto/pkg/analyses/adi/rest"
+	alertApp "github.com/daddydemir/crypto/pkg/analyses/alert/app"
+	alertInfra "github.com/daddydemir/crypto/pkg/analyses/alert/infra"
+	alertHandler "github.com/daddydemir/crypto/pkg/analyses/alert/rest"
 	atrApp "github.com/daddydemir/crypto/pkg/analyses/atr/app"
 	atrInfra "github.com/daddydemir/crypto/pkg/analyses/atr/infra"
 	atrHandler "github.com/daddydemir/crypto/pkg/analyses/atr/rest"
 	bollingerApp "github.com/daddydemir/crypto/pkg/analyses/bollinger/app"
 	bollingerInfra "github.com/daddydemir/crypto/pkg/analyses/bollinger/infra"
 	bollingerHandler "github.com/daddydemir/crypto/pkg/analyses/bollinger/rest"
+	coinApp "github.com/daddydemir/crypto/pkg/analyses/coin/app"
+	coinInfra "github.com/daddydemir/crypto/pkg/analyses/coin/infra"
+	coinHandler "github.com/daddydemir/crypto/pkg/analyses/coin/rest"
 	maApp "github.com/daddydemir/crypto/pkg/analyses/ma/app"
 	maInfra "github.com/daddydemir/crypto/pkg/analyses/ma/infra"
 	maHandler "github.com/daddydemir/crypto/pkg/analyses/ma/rest"
 	rsiApp "github.com/daddydemir/crypto/pkg/analyses/rsi/app"
 	rsiInfra "github.com/daddydemir/crypto/pkg/analyses/rsi/infra"
 	rsiHandler "github.com/daddydemir/crypto/pkg/analyses/rsi/rest"
+	"github.com/daddydemir/crypto/pkg/remote/coincap"
 
 	emaApp "github.com/daddydemir/crypto/pkg/analyses/ema/app"
 	emaInfra "github.com/daddydemir/crypto/pkg/analyses/ema/infra"
 	emaHandler "github.com/daddydemir/crypto/pkg/analyses/ema/rest"
-	"github.com/daddydemir/crypto/pkg/application/alert"
 
 	binanceCandleApp "github.com/daddydemir/crypto/pkg/binance/application"
 	binanceCandleInfra "github.com/daddydemir/crypto/pkg/binance/infrastructure"
@@ -44,10 +50,12 @@ var serviceFactory *factory.ServiceFactory
 var db = database.GetDatabaseService()
 var cacheService = cache.GetCacheService()
 var cacheable *service.CacheService
+var cachedClient *coincap.CachedClient
 
 func init() {
 	serviceFactory = factory.NewServiceFactory(db, cacheService, broker.GetBrokerService())
 	cacheable = serviceFactory.NewCacheService()
+	cachedClient = serviceFactory.NewCachedCoinCapClient()
 }
 
 func Route() http.Handler {
@@ -63,7 +71,7 @@ func Route() http.Handler {
 
 	priceRepo := infrastructure.NewPriceRepository(cacheable, cacheService)
 
-	//subRouter.HandleFunc("/topCoins", coinHandler.GetTopCoins).Methods(http.MethodGet)
+	coinHandler.NewHandler(coinApp.NewApp(coinInfra.NewRepository(cachedClient, db))).RegisterRoutes(subRouter)
 
 	rsiHandler.NewHandler(rsiApp.NewApp(rsiInfra.NewRepository(cacheService, cacheable, db))).RegisterRoutes(subRouter)
 
@@ -73,12 +81,7 @@ func Route() http.Handler {
 
 	bollingerHandler.NewHandler(bollingerApp.NewApp(bollingerInfra.NewRepository(cacheService), priceRepo)).RegisterRoutes(subRouter)
 
-	alertHandler := NewAlertHandler(alert.NewService(infrastructure.NewAlertRepository(db)))
-
-	subRouter.HandleFunc("/alerts", alertHandler.Create).Methods(http.MethodPost)
-	subRouter.HandleFunc("/alerts/{id}", alertHandler.Update).Methods(http.MethodPut)
-	subRouter.HandleFunc("/alerts/{id}", alertHandler.Delete).Methods(http.MethodDelete)
-	subRouter.HandleFunc("/alerts", alertHandler.List).Methods(http.MethodGet)
+	alertHandler.NewHandler(alertApp.NewApp(alertInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
 	binanceCandleHandler := binanceCandleRest.NewCandleHandler(binanceCandleApp.NewGetCandlesQuery(binanceCandleInfra.NewCandleRepository(db)))
 	subRouter.HandleFunc("/binance/coin/{symbol}", binanceCandleHandler.GetCandles).Methods(http.MethodGet)

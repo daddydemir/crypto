@@ -1,4 +1,4 @@
-package alert
+package domain
 
 import "time"
 
@@ -11,7 +11,6 @@ type Alert struct {
 	IsActive   bool
 }
 
-// Factory fonksiyonu
 func NewAlert(coin string, price float32, isAbove bool) Alert {
 	return Alert{
 		Coin:       coin,
@@ -22,7 +21,6 @@ func NewAlert(coin string, price float32, isAbove bool) Alert {
 	}
 }
 
-// Davranışlar (iş kuralları)
 func (a *Alert) Deactivate() {
 	a.IsActive = false
 }
