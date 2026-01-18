@@ -20,6 +20,9 @@ import (
 	maApp "github.com/daddydemir/crypto/pkg/analyses/ma/app"
 	maInfra "github.com/daddydemir/crypto/pkg/analyses/ma/infra"
 	maHandler "github.com/daddydemir/crypto/pkg/analyses/ma/rest"
+	macdApp "github.com/daddydemir/crypto/pkg/analyses/macd/app"
+	macdInfra "github.com/daddydemir/crypto/pkg/analyses/macd/infra"
+	macdHandler "github.com/daddydemir/crypto/pkg/analyses/macd/rest"
 	rsiApp "github.com/daddydemir/crypto/pkg/analyses/rsi/app"
 	rsiInfra "github.com/daddydemir/crypto/pkg/analyses/rsi/infra"
 	rsiHandler "github.com/daddydemir/crypto/pkg/analyses/rsi/rest"
@@ -91,6 +94,8 @@ func Route() http.Handler {
 	donchianHandler.NewHandler(donchianApp.NewApp(donchianInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
 	adiHandler.NewHandler(adiApp.NewApp(adiInfra.NewRepository(db))).RegisterRoutes(subRouter)
+
+	macdHandler.NewHandler(macdApp.NewApp(macdInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
