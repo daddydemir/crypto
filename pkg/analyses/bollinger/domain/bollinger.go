@@ -10,6 +10,7 @@ type Point struct {
 	MA20      float64
 	UpperBand float64
 	LowerBand float64
+	Price     float64
 }
 
 type PriceData struct {
@@ -36,6 +37,7 @@ func CalculateBollinger(prices []float64, dates []time.Time) []Point {
 			MA20:      ma,
 			UpperBand: ma + 2*std,
 			LowerBand: ma - 2*std,
+			Price:     prices[i],
 		})
 	}
 	return result

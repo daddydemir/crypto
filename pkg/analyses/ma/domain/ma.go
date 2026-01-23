@@ -3,10 +3,11 @@ package domain
 import "time"
 
 type Point struct {
-	Date time.Time `json:"date"`
-	MA7  float64   `json:"ma7"`
-	MA25 float64   `json:"ma25"`
-	MA99 float64   `json:"ma99"`
+	Date  time.Time `json:"date"`
+	MA7   float64   `json:"ma7"`
+	MA25  float64   `json:"ma25"`
+	MA99  float64   `json:"ma99"`
+	Price float64   `json:"price"`
 }
 
 type PriceData struct {
@@ -33,10 +34,11 @@ func CalculateSeries(dates []time.Time, prices []float64) []Point {
 		ma99 := mean(prices[i-98 : i+1])
 
 		result = append(result, Point{
-			Date: dates[i],
-			MA7:  ma7,
-			MA25: ma25,
-			MA99: ma99,
+			Date:  dates[i],
+			MA7:   ma7,
+			MA25:  ma25,
+			MA99:  ma99,
+			Price: prices[i],
 		})
 	}
 	return result
