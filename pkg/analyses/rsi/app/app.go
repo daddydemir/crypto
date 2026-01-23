@@ -23,7 +23,7 @@ func (a *App) TopCoinsRSI() ([]RSIDTO, error) {
 	for _, c := range coins {
 		coinIDs = append(coinIDs, strings.ToLower(c.Symbol))
 	}
-	prices, err := a.repo.GetLastNDaysPrices(coinIDs, 14)
+	prices, err := a.repo.GetLastNDaysPrices(coinIDs, 15)
 	if err != nil {
 		return nil, err
 	}
