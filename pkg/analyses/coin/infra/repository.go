@@ -34,77 +34,58 @@ func (r *Repository) GetCurrentPrices() ([]domain.Coin, error) {
 
 func (r *Repository) GetPriceChanges() ([]domain.PriceResult, error) {
 	var results []domain.PriceResult
-	query := `WITH price_data AS (
-        SELECT 
-            exchange_id,
-            first_price,
-            date::date as date
-        FROM daily_models 
-        WHERE date::date IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE - INTERVAL '7 days', CURRENT_DATE - INTERVAL '30 days')
-    ),
-    current_prices AS (
-        SELECT 
-            exchange_id,
-            first_price as current_price
-        FROM price_data
-        WHERE date::date = CURRENT_DATE
-    ),
-    day_ago_prices AS (
-        SELECT 
-            exchange_id,
-            first_price as day_ago_price
-        FROM price_data
-        WHERE date::date = CURRENT_DATE - INTERVAL '1 day'
-    ),
-    week_ago_prices AS (
-        SELECT 
-            exchange_id,
-            first_price as week_ago_price
-        FROM price_data
-        WHERE date::date = CURRENT_DATE - INTERVAL '7 days'
-    ),
-	month_ago_prices AS (
-	SELECT 
-		exchange_id,
-		first_price month_ago_price
-	FROM price_data
-	WHERE date::date = CURRENT_DATE - INTERVAL '30 days'
-	),
-	avg_7_days_price AS (
-		SELECT
-			exchange_id,
-			AVG(first_price) as avg_price
-		FROM daily_models
-		WHERE date::date BETWEEN CURRENT_DATE - INTERVAL '7 days' AND CURRENT_DATE - INTERVAL '1 day'
-		GROUP BY exchange_id
-	),
-	avg_30_days_price AS (
-		SELECT
-			exchange_id,
-			avg(first_price) as avg_price
-		FROM daily_models
-		WHERE date::date BETWEEN CURRENT_DATE - INTERVAL '30 days' AND CURRENT_DATE - INTERVAL '1 day'
-		GROUP BY exchange_id
-	)
-    SELECT 
-        c.exchange_id,
-        c.current_price,
-        d.day_ago_price,
-        w.week_ago_price,
-		m.month_ago_price,
-		avg_7.avg_price as avg_7_days_price,
-		avg_30.avg_price as avg_30_days_price,
-        ROUND(((c.current_price - d.day_ago_price) / d.day_ago_price) * 100, 2) as change_24h,
-        ROUND(((c.current_price - w.week_ago_price) / w.week_ago_price) * 100, 2) as change_7d,
-		ROUND(((c.current_price - m.month_ago_price) / m.month_ago_price) * 100, 2) as change_30d,
-		ROUND(((c.current_price - avg_7.avg_price) /  avg_7.avg_price) * 100 , 2) as change_arithmetic_7d,
-		ROUND(((c.current_price - avg_30.avg_price) / avg_30.avg_price) * 100 , 2) as change_arithmetic_30d
-    FROM current_prices c
-    LEFT JOIN day_ago_prices d ON c.exchange_id = d.exchange_id
-    LEFT JOIN week_ago_prices w ON c.exchange_id = w.exchange_id
-	LEFT JOIN month_ago_prices m ON c.exchange_id = m.exchange_id
-	LEFT JOIN avg_7_days_price avg_7 ON c.exchange_id = avg_7.exchange_id
-	LEFT JOIN avg_30_days_price avg_30 ON c.exchange_id = avg_30.exchange_id`
+	query := `
+with price_data as (
+	select c.symbol, c.close_price, c.close_time::date
+	from candles c 
+	where c.close_time::date in (current_date - interval '1 day', current_date - interval '2 days', current_date - interval '8 days', current_date - interval '31 days')
+),
+current_price as (
+	select symbol, close_price as current_price
+	from price_data
+	where close_time::date = current_date - interval '1 day'
+), day_ago_prices as (
+	select symbol, close_price as day_ago_price
+	from price_data
+	where close_time::date = current_date - interval '2 days'
+), week_ago_prices as (
+	select symbol, close_price as week_ago_price
+	from price_data 
+	where close_time::date = current_date - interval '8 days'
+), month_ago_prices as (
+	select symbol, close_price as month_ago_price
+	from price_data
+	where close_time::date = current_date - interval '31 days'
+), avg_7_days_price as (
+	select symbol, avg(close_price) as week_avg_price
+	from candles c
+	where c.open_time::date between current_date - interval '8 days' and current_date - interval '2 days'
+	group by symbol
+), avg_30_days_price as (
+	select symbol, avg(close_price) as month_avg_price
+	from candles c
+	where c.open_time::date between current_date - interval '31 days' and current_date - interval '2 days'
+	group by symbol
+)
+select cp.symbol as exchange_id
+	, cp.current_price
+	, dap.day_ago_price
+	, wap.week_ago_price
+	, map.month_ago_price
+	, a7.week_avg_price as avg_7_days_price
+	, a30.month_avg_price as avg_30_days_price
+	, round(((cp.current_price - dap.day_ago_price) / dap.day_ago_price) * 100, 2) as change_24h
+	, round(((cp.current_price - wap.week_ago_price) / wap.week_ago_price) * 100, 2) as change_7d
+	, round(((cp.current_price - map.month_ago_price) / map.month_ago_price) * 100, 2) as change_30d
+	, round(((cp.current_price - a7.week_avg_price) / a7.week_avg_price) * 100, 2) as change_arithmetic_7d
+	, round(((cp.current_price - a30.month_avg_price) / a30.month_avg_price) * 100, 2) as change_arithmetic_30d
+from current_price cp
+	left join day_ago_prices dap on dap.symbol = cp.symbol
+	left join week_ago_prices wap on wap.symbol = cp.symbol
+	left join month_ago_prices map on map.symbol = cp.symbol
+	left join avg_7_days_price a7 on a7.symbol = cp.symbol
+	left join avg_30_days_price a30 on a30.symbol = cp.symbol
+`
 	err := r.db.Raw(query).Scan(&results).Error
 	return results, err
 

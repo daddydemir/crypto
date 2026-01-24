@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/daddydemir/crypto/pkg/analyses/coin/domain"
 	"github.com/daddydemir/crypto/pkg/analyses/coin/infra"
-	"strings"
 )
 
 type App struct {
@@ -34,11 +33,11 @@ func (a *App) GetTopCoins() ([]domain.StatsDTO, error) {
 			Name:                c.Name,
 			Symbol:              c.Symbol,
 			Price:               c.PriceUSD,
-			Change24h:           coinMap[strings.ToLower(c.Symbol)].Change24h,
-			Change7d:            coinMap[strings.ToLower(c.Symbol)].Change7d,
-			Change30d:           coinMap[strings.ToLower(c.Symbol)].Change30d,
-			ArithmeticChange7d:  coinMap[strings.ToLower(c.Symbol)].ChangeArithmetic7d,
-			ArithmeticChange30d: coinMap[strings.ToLower(c.Symbol)].ChangeArithmetic30d,
+			Change24h:           coinMap[c.Symbol].Change24h,
+			Change7d:            coinMap[c.Symbol].Change7d,
+			Change30d:           coinMap[c.Symbol].Change30d,
+			ArithmeticChange7d:  coinMap[c.Symbol].ChangeArithmetic7d,
+			ArithmeticChange30d: coinMap[c.Symbol].ChangeArithmetic30d,
 		})
 	}
 
