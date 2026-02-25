@@ -78,11 +78,11 @@ func Route() http.Handler {
 
 	rsiHandler.NewHandler(rsiApp.NewApp(rsiInfra.NewRepository(cacheService, cacheable, db))).RegisterRoutes(subRouter)
 
-	maHandler.NewHandler(maApp.NewApp(maInfra.NewRepository(cacheService), priceRepo)).RegisterRoutes(subRouter)
+	maHandler.NewHandler(maApp.NewApp(maInfra.NewRepository(db), priceRepo)).RegisterRoutes(subRouter)
 
-	emaHandler.NewHandler(emaApp.NewApp(emaInfra.NewRepository(cacheService))).RegisterRoutes(subRouter)
+	emaHandler.NewHandler(emaApp.NewApp(emaInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
-	bollingerHandler.NewHandler(bollingerApp.NewApp(bollingerInfra.NewRepository(cacheService), priceRepo)).RegisterRoutes(subRouter)
+	bollingerHandler.NewHandler(bollingerApp.NewApp(bollingerInfra.NewRepository(db), priceRepo)).RegisterRoutes(subRouter)
 
 	alertHandler.NewHandler(alertApp.NewApp(alertInfra.NewRepository(db))).RegisterRoutes(subRouter)
 

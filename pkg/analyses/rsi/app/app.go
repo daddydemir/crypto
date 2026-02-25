@@ -43,7 +43,7 @@ func (a *App) TopCoinsRSI() ([]RSIDTO, error) {
 }
 
 func (a *App) CoinRSIHistory(coinID string, days int) ([]RSIHistoryDTO, error) {
-	priceData, err := a.repo.GetHistoricalPrices(coinID, days)
+	priceData, err := a.repo.GetHistoricalPricesDB(coinID)
 	if err != nil {
 		return nil, err
 	}

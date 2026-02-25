@@ -2,32 +2,22 @@ package infra
 
 import (
 	"github.com/daddydemir/crypto/pkg/analyses/ema/domain"
-	"github.com/daddydemir/crypto/pkg/cache"
-	"github.com/daddydemir/crypto/pkg/remote/coincap"
+	"gorm.io/gorm"
 )
 
 type Repository struct {
-	cacheService cache.Cache
+	database *gorm.DB
 }
 
-func NewRepository(cacheService cache.Cache) *Repository {
+func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
-		cacheService: cacheService,
+		database: db,
 	}
 }
 
-func (r *Repository) GetLastNDaysPricesWithDates(coinID string, days int) ([]domain.PriceData, error) {
-	list := make([]coincap.History, 0)
-	err := r.cacheService.GetList(coinID, &list, 0, int64(days))
-	if err != nil {
-		return nil, err
-	}
-	prices := make([]domain.PriceData, 0, len(list))
-	for _, h := range list {
-		prices = append(prices, domain.PriceData{
-			Price: float64(h.PriceUsd),
-			Date:  h.Date,
-		})
-	}
-	return prices, nil
+func (r *Repository) GetPrices(coinID string) ([]domain.PriceData, error) {
+	sql := `select close_price as price, close_time::date as date from candles where symbol = upper(?) order by close_time`
+	var results []domain.PriceData
+	r.database.Raw(sql, coinID).Scan(&results)
+	return results, nil
 }

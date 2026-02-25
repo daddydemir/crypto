@@ -20,7 +20,7 @@ func NewApp(priceRepo domain.Repository, repo infrastructure.PriceRepository) *A
 }
 
 func (a *App) GetBollingerSeries(coinID string, days int) ([]domain.Point, error) {
-	datas, err := a.PriceRepo.GetLastNDaysPricesWithDates(coinID, days)
+	datas, err := a.PriceRepo.GetPrices(coinID)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,10 @@ func (a *App) GetBollingerBandSignal() ([]domain.Signal, error) {
 	response := make([]domain.Signal, 0, len(coins))
 
 	for _, coin := range coins {
-		prices, err := a.PriceRepo.GetLastNDaysPricesWithDates(coin.Id, -20)
+		prices, err := a.PriceRepo.GetPrices(coin.Symbol)
+		if len(prices) > 20 {
+			prices = prices[len(prices)-20:]
+		}
 		if err != nil || len(prices) != 20 {
 			continue
 		}

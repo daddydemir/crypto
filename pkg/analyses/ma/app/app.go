@@ -24,7 +24,7 @@ func NewApp(priceRepo *infra.Repository, repo infrastructure.PriceRepository) *A
 }
 
 func (a *App) GetMovingAverageSeries(coinID string, days int) ([]domain.Point, error) {
-	datas, err := a.PriceRepo.GetLastNDaysPricesWithDates(coinID, days)
+	datas, err := a.PriceRepo.GetPrices(coinID)
 	if err != nil {
 		return nil, err
 	}
