@@ -33,22 +33,42 @@ func NewClient(url string, redisClient *redis.Client) *Client {
 }
 
 func (c *Client) Fetch() {
-
 	baseUrl := c.baseUrl + strings.Join(mapAssetsToStreams(assets), "/")
 
-	conn, _, err := websocket.DefaultDialer.Dial(baseUrl, nil)
-	if err != nil {
-		slog.Error("Failed to connect to websocket", "error", err)
-		return
-	}
-	defer conn.Close()
+	retryDelay := 2 * time.Second
+	maxRetryDelay := 30 * time.Second
 
+	for {
+		slog.Info("Connecting to websocket", "url", baseUrl)
+
+		conn, _, err := websocket.DefaultDialer.Dial(baseUrl, nil)
+		if err != nil {
+			slog.Error("Failed to connect to websocket", "error", err, "retry_in", retryDelay)
+			time.Sleep(retryDelay)
+			retryDelay = nextRetryDelay(retryDelay, maxRetryDelay)
+			continue
+		}
+
+		slog.Info("Websocket connected")
+		retryDelay = 2 * time.Second
+
+		if err := c.consume(conn); err != nil {
+			slog.Error("Websocket connection lost", "error", err, "retry_in", retryDelay)
+		}
+
+		conn.Close()
+		time.Sleep(retryDelay)
+		retryDelay = nextRetryDelay(retryDelay, maxRetryDelay)
+	}
+}
+
+func (c *Client) consume(conn *websocket.Conn) error {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			slog.Error("Failed to read message from websocket", "error", err)
-			break
+			return err
 		}
+
 		var ticker Ticker
 		if err = json.Unmarshal(message, &ticker); err != nil {
 			slog.Error("Failed to unmarshal message from websocket", "error", err)
@@ -62,6 +82,14 @@ func (c *Client) Fetch() {
 		payload := fmt.Sprintf(`{"s": "%s", "p": "%s", "t": %d}`, ticker.Data.Symbol, ticker.Data.Price, ticker.Time)
 		c.publish(payload)
 	}
+}
+
+func nextRetryDelay(current, max time.Duration) time.Duration {
+	next := current * 2
+	if next > max {
+		return max
+	}
+	return next
 }
 
 func mapAssetsToStreams(assets []string) []string {
