@@ -59,7 +59,7 @@ func (c *Client) Fetch() {
 		ticker.Stream = ticker.Stream[:4]
 		ticker.Data.Symbol = ticker.Data.Symbol[:len(ticker.Data.Symbol)-4]
 
-		payload := fmt.Sprintf(`{"s": "%s", "p": "%s", "t": %d"}`, ticker.Data.Symbol, ticker.Data.Price, ticker.Time)
+		payload := fmt.Sprintf(`{"s": "%s", "p": "%s", "t": %d}`, ticker.Data.Symbol, ticker.Data.Price, ticker.Time)
 		c.publish(payload)
 	}
 }
