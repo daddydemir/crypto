@@ -1,22 +1,28 @@
 package main
 
 import (
+	"log/slog"
+	"net/http"
+	"time"
+
 	"github.com/daddydemir/crypto/config"
+	cch "github.com/daddydemir/crypto/config/cache"
 	"github.com/daddydemir/crypto/config/database"
 	"github.com/daddydemir/crypto/handler"
 	"github.com/daddydemir/crypto/pkg/application/binance"
 	"github.com/daddydemir/crypto/pkg/cache"
 	binance2 "github.com/daddydemir/crypto/pkg/infrastructure/binance"
 	"github.com/daddydemir/crypto/pkg/infrastructure/scheduler"
+	bnnc "github.com/daddydemir/crypto/pkg/remote/binance"
 	"github.com/daddydemir/crypto/pkg/service"
 	_ "github.com/daddydemir/dlog"
 	"gorm.io/gorm"
-	"log/slog"
-	"net/http"
-	"time"
 )
 
 func main() {
+
+	go bnnc.NewClient(config.Get("WS_URL"), cch.GetRedisClient()).Fetch()
+	go handler.ListenAndBroadcast(cch.GetRedisClient())
 	initJobs(database.GetDatabaseService())
 
 	server := &http.Server{

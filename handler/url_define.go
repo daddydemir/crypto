@@ -43,10 +43,11 @@ import (
 	"github.com/daddydemir/crypto/pkg/factory"
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 
+	"net/http"
+
 	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"net/http"
 )
 
 var serviceFactory *factory.ServiceFactory
@@ -67,6 +68,7 @@ func Route() http.Handler {
 	r.Use(setLogging)
 
 	r.HandleFunc("/health", healthHandler)
+	r.HandleFunc("/ws", handleConnections)
 
 	base := "/api/v1"
 
