@@ -2,9 +2,10 @@ package rest
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/daddydemir/crypto/pkg/binance/application"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 type CandleHandler struct {
@@ -20,7 +21,9 @@ func (h *CandleHandler) GetCandles(w http.ResponseWriter, r *http.Request) {
 	if symbol == "" {
 		http.Error(w, "symbol is required", http.StatusBadRequest)
 	}
-	candles, err := h.getCandles.Execute(symbol)
+	year := r.URL.Query().Get("year")
+	month := r.URL.Query().Get("month")
+	candles, err := h.getCandles.Execute(symbol, year, month)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
