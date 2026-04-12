@@ -1,0 +1,59 @@
+# .github/workflows/db-backup.yml
+
+name: Daily Database Backup
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+env:
+  BACKUP_RETENTION_DAYS: 30
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "date=$(TZ='Europe/Istanbul' date +'%Y-%m-%d_%H-%M')" >> $GITHUB_OUTPUT
+
+      - name: SSH - Backup and upload to R2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.PG_HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,R2_BUCKET,R2_ENDPOINT
+          script: |
+            set -e
+
+            mkdir -p /home/${{ secrets.USERNAME }}/db-backups
+
+            BACKUP_FILE="${{ secrets.DB_NAME }}_${{ steps.date.outputs.date }}.dump"
+            BACKUP_PATH="/home/${{ secrets.USERNAME }}/db-backups/$BACKUP_FILE"
+
+            # Backup oluştur
+            docker exec ${{ secrets.POSTGRES_CONTAINER_NAME }} \
+              pg_dump -U postgres -d ${{ secrets.DB_NAME }} -F c \
+              > "$BACKUP_PATH"
+
+            echo "✅ Backup created: $BACKUP_FILE"
+            ls -lh "$BACKUP_PATH"
+
+            # R2'ye yükle
+            aws s3 cp "$BACKUP_PATH" \
+              "s3://${R2_BUCKET}/backups/$BACKUP_FILE" \
+              --endpoint-url "${R2_ENDPOINT}"
+
+            echo "☁️ Uploaded to R2"
+
+            # Eski yedekleri temizle
+            find /home/${{ secrets.USERNAME }}/db-backups -name "*.dump" -mtime +30 -delete
+            echo "🧹 Old backups cleaned"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
