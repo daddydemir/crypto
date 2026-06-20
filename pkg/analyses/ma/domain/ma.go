@@ -23,15 +23,15 @@ type Signal struct {
 	Points []Point `json:"points"`
 }
 
-func CalculateSeries(dates []time.Time, prices []float64) []Point {
+func CalculateSeries(dates []time.Time, prices []float64, short, mid, long int) []Point {
 	var result []Point
 	for i := range prices {
-		if i < 98 {
+		if i < long-1 {
 			continue
 		}
-		ma7 := mean(prices[i-6 : i+1])
-		ma25 := mean(prices[i-24 : i+1])
-		ma99 := mean(prices[i-98 : i+1])
+		ma7 := mean(prices[i-(short-1) : i+1])
+		ma25 := mean(prices[i-(mid-1) : i+1])
+		ma99 := mean(prices[i-(long-1) : i+1])
 
 		result = append(result, Point{
 			Date:  dates[i],

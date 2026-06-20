@@ -20,21 +20,21 @@ type DonchianData struct {
 	Close float64
 }
 
-func CalculateDonchian(data []DonchianData) ([]DonchianChannel, error) {
+func CalculateDonchian(data []DonchianData, period int) ([]DonchianChannel, error) {
 
-	if len(data) < 20 {
+	if len(data) < period {
 		return nil, fmt.Errorf("not enough data to calculate donchian channel, data length: %d", len(data))
 	}
 
-	result := make([]DonchianChannel, len(data)-20)
-	for i := 0; i < len(data)-20; i++ {
-		lowest, highest := getMinAndMaxWithPeriod(data[i:i+20], 20)
+	result := make([]DonchianChannel, len(data)-period)
+	for i := 0; i < len(data)-period; i++ {
+		lowest, highest := getMinAndMaxWithPeriod(data[i:i+period], period)
 		result[i] = DonchianChannel{
 			Upper:  highest,
 			Lower:  lowest,
 			Middle: (highest + lowest) / 2,
-			Date:   data[i+20].Date.Format("2006-01-02"),
-			Price:  data[i+20].Close,
+			Date:   data[i+period].Date.Format("2006-01-02"),
+			Price:  data[i+period].Close,
 		}
 	}
 

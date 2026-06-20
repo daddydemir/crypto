@@ -1,12 +1,13 @@
 package app
 
 import (
+	"slices"
+	"time"
+
 	"github.com/daddydemir/crypto/pkg/analyses/ma/domain"
 	"github.com/daddydemir/crypto/pkg/analyses/ma/infra"
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
-	"slices"
-	"time"
 )
 
 var list = []string{"usd-coin", "paypal-usd", "ripple-usd", "tether", "ethena-usde"}
@@ -23,7 +24,7 @@ func NewApp(priceRepo *infra.Repository, repo infrastructure.PriceRepository) *A
 	}
 }
 
-func (a *App) GetMovingAverageSeries(coinID string, days int) ([]domain.Point, error) {
+func (a *App) GetMovingAverageSeries(coinID string, days, short, mid, long int) ([]domain.Point, error) {
 	datas, err := a.PriceRepo.GetPrices(coinID)
 	if err != nil {
 		return nil, err
@@ -33,7 +34,7 @@ func (a *App) GetMovingAverageSeries(coinID string, days int) ([]domain.Point, e
 		dates = append(dates, d.Date)
 		prices = append(prices, d.Price)
 	}
-	return domain.CalculateSeries(dates, prices), nil
+	return domain.CalculateSeries(dates, prices, short, mid, long), nil
 }
 
 func (a *App) GetMovingAverageSignals() ([]domain.Signal, error) {
@@ -50,7 +51,8 @@ func (a *App) GetMovingAverageSignals() ([]domain.Signal, error) {
 		if err != nil {
 			continue
 		}
-		series := domain.CalculateSeries(getTimeAndPrice(prices))
+		price, float64s := getTimeAndPrice(prices)
+		series := domain.CalculateSeries(price, float64s, 7, 25, 99)
 		if len(series) != 3 {
 			continue
 		}

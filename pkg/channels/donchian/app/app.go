@@ -10,13 +10,13 @@ func NewApp(repo domain.Repository) *App {
 	return &App{repo: repo}
 }
 
-func (d *App) Series(symbol string) ([]domain.DonchianChannel, error) {
+func (d *App) Series(symbol string, period int) ([]domain.DonchianChannel, error) {
 
 	datas, err := d.repo.GetRawDataWithSymbol(symbol)
 	if err != nil {
 		return nil, err
 	}
 
-	channels, err := domain.CalculateDonchian(datas)
+	channels, err := domain.CalculateDonchian(datas, period)
 	return channels, err
 }

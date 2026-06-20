@@ -2,9 +2,11 @@ package rest
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
 	"github.com/daddydemir/crypto/pkg/channels/donchian/app"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 type Handler struct {
@@ -26,7 +28,14 @@ func (h *Handler) DonchianChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	series, err := h.app.Series(symbol)
+	periodStr := r.URL.Query().Get("period")
+
+	period := 20
+	if periodStr != "" {
+		period, _ = strconv.Atoi(periodStr)
+	}
+
+	series, err := h.app.Series(symbol, period)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -2,10 +2,11 @@ package rest
 
 import (
 	"encoding/json"
-	"github.com/daddydemir/crypto/pkg/analyses/ma/app"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+
+	"github.com/daddydemir/crypto/pkg/analyses/ma/app"
+	"github.com/gorilla/mux"
 )
 
 type Handler struct {
@@ -28,15 +29,28 @@ func (h *Handler) MovingAverages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	daysStr := r.URL.Query().Get("days")
+	shortStr := r.URL.Query().Get("short")
+	midStr := r.URL.Query().Get("mid")
+	longStr := r.URL.Query().Get("long")
 
 	days := 99
+	short, mid, long := 7, 25, 99
 	if daysStr != "" {
 		if d, err := strconv.Atoi(daysStr); err == nil {
 			days = d
 		}
 	}
+	if shortStr != "" {
+		short, _ = strconv.Atoi(shortStr)
+	}
+	if midStr != "" {
+		mid, _ = strconv.Atoi(midStr)
+	}
+	if longStr != "" {
+		long, _ = strconv.Atoi(longStr)
+	}
 
-	result, err := h.app.GetMovingAverageSeries(coinID, days)
+	result, err := h.app.GetMovingAverageSeries(coinID, days, short, mid, long)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
