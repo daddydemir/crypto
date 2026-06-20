@@ -6,11 +6,13 @@ import (
 )
 
 type DonchianChannel struct {
-	Upper  float64
-	Lower  float64
-	Middle float64
-	Date   string
-	Price  float64
+	Upper     float64
+	Lower     float64
+	Middle    float64
+	Date      string
+	Price     float64
+	LowPrice  float64
+	HighPrice float64
 }
 
 type DonchianData struct {
@@ -30,11 +32,13 @@ func CalculateDonchian(data []DonchianData, period int) ([]DonchianChannel, erro
 	for i := 0; i < len(data)-period; i++ {
 		lowest, highest := getMinAndMaxWithPeriod(data[i:i+period], period)
 		result[i] = DonchianChannel{
-			Upper:  highest,
-			Lower:  lowest,
-			Middle: (highest + lowest) / 2,
-			Date:   data[i+period].Date.Format("2006-01-02"),
-			Price:  data[i+period].Close,
+			Upper:     highest,
+			Lower:     lowest,
+			Middle:    (highest + lowest) / 2,
+			Date:      data[i+period].Date.Format("2006-01-02"),
+			Price:     data[i+period].Close,
+			LowPrice:  data[i+period].Min,
+			HighPrice: data[i+period].Max,
 		}
 	}
 
