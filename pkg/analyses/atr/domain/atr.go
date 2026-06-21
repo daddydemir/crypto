@@ -34,7 +34,7 @@ func CalculateATR(prices []AtrPoint) ([]Point, error) {
 
 		newPoint := Point{
 			Time:  prices[i].Time,
-			Point: (prev + tr(prices[i])) / float64(period),
+			Point: (prev*float64(period-1) + tr(prices[i])) / float64(period),
 		}
 		result = append(result, newPoint)
 		prev = newPoint.Point
