@@ -15,27 +15,27 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Create .env file from secret
-      run: echo "${{ secrets.ENV_FILE }}" > .env
+      run: echo "${{ secrets.MASTER_ENV_FILE }}" > .env
 
     - name: Copy files to server
       uses: appleboy/scp-action@v0.1.4
       with:
-        host: ${{ secrets.TEST_HOST }}
+        host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         source: "."
-        target: "/home/${{ secrets.USERNAME }}/crypto"
+        target: "/home/${{ secrets.USERNAME }}/crypto-main"
 
     - name: SSH - Build and Restart Docker container
       uses: appleboy/ssh-action@v0.1.10
       with:
-        host: ${{ secrets.TEST_HOST }}
+        host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          cd /home/${{ secrets.USERNAME }}/crypto
-          docker stop crypto || true
-          docker rm crypto || true
-          docker image rm crypto:latest || true
-          docker build -t crypto:latest .
-          docker run -d --env-file .env -e TZ=Europe/Istanbul --name crypto --network=host -p 4242:4242 crypto:latest
+          cd /home/${{ secrets.USERNAME }}/crypto-main
+          docker stop crypto-main || true
+          docker rm crypto-main || true
+          docker image rm crypto-main:latest || true
+          docker build -t crypto-main:latest .
+          docker run -d --env-file .env -e TZ=Europe/Istanbul --name crypto-main --network=host -p 4243:4242 crypto-main:latest
