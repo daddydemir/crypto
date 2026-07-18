@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/daddydemir/crypto/config/cache"
-	"github.com/redis/go-redis/v9"
 	"log/slog"
 	"reflect"
 	"time"
+
+	"github.com/daddydemir/crypto/config/cache"
+	"github.com/redis/go-redis/v9"
 )
 
 type RedisCache struct {
@@ -146,5 +147,51 @@ func (r *RedisCache) DeleteLastItem(key string) error {
 	}
 
 	fmt.Printf("Removed last item: %s\n", val)
+	return nil
+}
+
+func (r *RedisCache) GetZList(key string, list any) error {
+	ctx := context.Background()
+	suAnkiZaman := time.Now().Unix()
+
+	// 1. ADIM: Gelen list parametresinin slice işaretçisi olduğunu doğrula (GetList ile aynı)
+	v := reflect.ValueOf(list)
+	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Slice {
+		return fmt.Errorf("list must be a pointer to a slice")
+	}
+
+	slices := v.Elem()
+	elemType := slices.Type().Elem()
+
+	// 2. ADIM: Süresi dolmuş eski verileri temizle
+	err := r.client.ZRemRangeByScore(ctx, key, "0", fmt.Sprintf("%d", suAnkiZaman)).Err()
+	if err != nil {
+		slog.Error("GetZList:ZRemRangeByScore", "error", err)
+		return err
+	}
+
+	// 3. ADIM: Sadece aktif olan (silinme zamanı şu andan büyük olan) verileri getir
+	opt := &redis.ZRangeBy{
+		Min: fmt.Sprintf("%d", suAnkiZaman),
+		Max: "+inf",
+	}
+
+	result, err := r.client.ZRangeByScore(ctx, key, opt).Result()
+	if err != nil {
+		slog.Error("GetZList:ZRangeByScore", "error", err)
+		return err
+	}
+
+	// 4. ADIM: Gelen verileri dinamik olarak dışarıdan verilen slice'a ekle
+	for _, jsonData := range result {
+		newElem := reflect.New(elemType).Elem()
+		err = json.Unmarshal([]byte(jsonData), newElem.Addr().Interface())
+		if err != nil {
+			slog.Error("GetZList:json.Unmarshal", "error", err)
+			return err
+		}
+		slices.Set(reflect.Append(slices, newElem))
+	}
+
 	return nil
 }

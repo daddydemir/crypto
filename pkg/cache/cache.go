@@ -1,8 +1,9 @@
 package cache
 
 import (
-	"github.com/daddydemir/crypto/pkg/cache/redis"
 	"time"
+
+	"github.com/daddydemir/crypto/pkg/cache/redis"
 )
 
 type Cache interface {
@@ -14,6 +15,7 @@ type Cache interface {
 	DeleteListItem(key string, start, end int64) error
 	DeleteLastItem(key string) error
 	Delete(key string) error
+	GetZList(key string, list any) error
 }
 
 func GetCacheService() Cache {
