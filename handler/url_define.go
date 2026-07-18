@@ -23,6 +23,9 @@ import (
 	macdApp "github.com/daddydemir/crypto/pkg/analyses/macd/app"
 	macdInfra "github.com/daddydemir/crypto/pkg/analyses/macd/infra"
 	macdHandler "github.com/daddydemir/crypto/pkg/analyses/macd/rest"
+	"github.com/daddydemir/crypto/pkg/analyses/notification/app"
+	"github.com/daddydemir/crypto/pkg/analyses/notification/infra"
+	"github.com/daddydemir/crypto/pkg/analyses/notification/rest"
 	rsiApp "github.com/daddydemir/crypto/pkg/analyses/rsi/app"
 	rsiInfra "github.com/daddydemir/crypto/pkg/analyses/rsi/infra"
 	rsiHandler "github.com/daddydemir/crypto/pkg/analyses/rsi/rest"
@@ -98,6 +101,8 @@ func Route() http.Handler {
 	adiHandler.NewHandler(adiApp.NewApp(adiInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
 	macdHandler.NewHandler(macdApp.NewApp(macdInfra.NewRepository(db))).RegisterRoutes(subRouter)
+
+	rest.NewHandler(app.NewApp(infra.NewRepository(cacheService))).RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
