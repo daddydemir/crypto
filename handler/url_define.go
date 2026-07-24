@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/daddydemir/crypto/config"
 	"github.com/daddydemir/crypto/config/database"
 	adiApp "github.com/daddydemir/crypto/pkg/analyses/adi/app"
 	adiInfra "github.com/daddydemir/crypto/pkg/analyses/adi/infra"
@@ -23,13 +24,17 @@ import (
 	macdApp "github.com/daddydemir/crypto/pkg/analyses/macd/app"
 	macdInfra "github.com/daddydemir/crypto/pkg/analyses/macd/infra"
 	macdHandler "github.com/daddydemir/crypto/pkg/analyses/macd/rest"
-	"github.com/daddydemir/crypto/pkg/analyses/notification/app"
-	"github.com/daddydemir/crypto/pkg/analyses/notification/infra"
-	"github.com/daddydemir/crypto/pkg/analyses/notification/rest"
+	notfyApp "github.com/daddydemir/crypto/pkg/analyses/notification/app"
+	notfyInfra "github.com/daddydemir/crypto/pkg/analyses/notification/infra"
+	notfyHandler "github.com/daddydemir/crypto/pkg/analyses/notification/rest"
 	rsiApp "github.com/daddydemir/crypto/pkg/analyses/rsi/app"
 	rsiInfra "github.com/daddydemir/crypto/pkg/analyses/rsi/infra"
 	rsiHandler "github.com/daddydemir/crypto/pkg/analyses/rsi/rest"
+	basicApp "github.com/daddydemir/crypto/pkg/auth/basic/app"
+	basicInfra "github.com/daddydemir/crypto/pkg/auth/basic/infra"
+	basicHandler "github.com/daddydemir/crypto/pkg/auth/basic/rest"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
+	"github.com/daddydemir/crypto/pkg/token/jwt"
 
 	emaApp "github.com/daddydemir/crypto/pkg/analyses/ema/app"
 	emaInfra "github.com/daddydemir/crypto/pkg/analyses/ema/infra"
@@ -58,6 +63,7 @@ var db = database.GetDatabaseService()
 var cacheService = cache.GetCacheService()
 var cacheable *service.CacheService
 var cachedClient *coincap.CachedClient
+var tokenService = jwt.NewTokenService(config.Get("JWT_SECRET"))
 
 func init() {
 	serviceFactory = factory.NewServiceFactory(db, cacheService, broker.GetBrokerService())
@@ -77,6 +83,9 @@ func Route() http.Handler {
 
 	subRouter := r.PathPrefix(base).Subrouter()
 
+	authorize := r.PathPrefix(base).Subrouter()
+	authorize.Use(auth)
+
 	priceRepo := infrastructure.NewPriceRepository(cacheable, cacheService)
 
 	coinHandler.NewHandler(coinApp.NewApp(coinInfra.NewRepository(cachedClient, db))).RegisterRoutes(subRouter)
@@ -89,7 +98,7 @@ func Route() http.Handler {
 
 	bollingerHandler.NewHandler(bollingerApp.NewApp(bollingerInfra.NewRepository(db), priceRepo)).RegisterRoutes(subRouter)
 
-	alertHandler.NewHandler(alertApp.NewApp(alertInfra.NewRepository(db))).RegisterRoutes(subRouter)
+	alertHandler.NewHandler(alertApp.NewApp(alertInfra.NewRepository(db))).RegisterRoutes(authorize)
 
 	binanceCandleHandler := binanceCandleRest.NewCandleHandler(binanceCandleApp.NewGetCandlesQuery(binanceCandleInfra.NewCandleRepository(db)))
 	subRouter.HandleFunc("/binance/coin/{symbol}", binanceCandleHandler.GetCandles).Methods(http.MethodGet)
@@ -102,7 +111,8 @@ func Route() http.Handler {
 
 	macdHandler.NewHandler(macdApp.NewApp(macdInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
-	rest.NewHandler(app.NewApp(infra.NewRepository(cacheService))).RegisterRoutes(subRouter)
+	notfyHandler.NewHandler(notfyApp.NewApp(notfyInfra.NewRepository(cacheService))).RegisterRoutes(subRouter)
+	basicHandler.NewHandler(basicApp.NewApp(basicInfra.NewRepository(db, tokenService))).RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
