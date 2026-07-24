@@ -35,7 +35,7 @@ func (r *Repository) CreateUser(user domain.User) error {
 func (r *Repository) Login(username, password string) (*domain.LoginResponse, error) {
 	user, err := r.findUserByUsername(username)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid username or password")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
