@@ -50,6 +50,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("Login:h.app.Login", "err", err)
 		httpResp.WriteJSONError(w, http.StatusInternalServerError, httpResp.NewHttpError(err.Error()))
+		return
 	}
 	httpResp.WriteJSONError(w, http.StatusOK, response)
 }
