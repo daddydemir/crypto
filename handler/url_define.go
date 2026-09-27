@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"log/slog"
+
 	"github.com/daddydemir/crypto/config"
 	"github.com/daddydemir/crypto/config/database"
 	adiApp "github.com/daddydemir/crypto/pkg/analyses/adi/app"
@@ -73,11 +75,15 @@ func Route() http.Handler {
 	authorize := r.PathPrefix(base).Subrouter()
 	authorize.Use(auth)
 
-	priceRepo := infrastructure.NewPriceRepository(db)
+	coinCatalog := infrastructure.NewCoinCatalog(db, cacheService)
+	if _, err := coinCatalog.List(); err != nil {
+		slog.Error("failed to initialize coin catalog cache", "error", err)
+	}
+	priceRepo := infrastructure.NewPriceRepository(db, coinCatalog)
 
-	coinHandler.NewHandler(coinApp.NewApp(coinInfra.NewRepository(db))).RegisterRoutes(subRouter)
+	coinHandler.NewHandler(coinApp.NewApp(coinInfra.NewRepository(db, coinCatalog))).RegisterRoutes(subRouter)
 
-	rsiHandler.NewHandler(rsiApp.NewApp(rsiInfra.NewRepository(db))).RegisterRoutes(subRouter)
+	rsiHandler.NewHandler(rsiApp.NewApp(rsiInfra.NewRepository(db, coinCatalog))).RegisterRoutes(subRouter)
 
 	maHandler.NewHandler(maApp.NewApp(maInfra.NewRepository(db), priceRepo)).RegisterRoutes(subRouter)
 

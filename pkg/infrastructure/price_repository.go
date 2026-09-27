@@ -11,27 +11,43 @@ type PriceRepository interface {
 }
 
 type PriceRepositoryImpl struct {
-	db *gorm.DB
+	db      *gorm.DB
+	catalog *CoinCatalog
 }
 
-func NewPriceRepository(db *gorm.DB) PriceRepository {
-	return &PriceRepositoryImpl{db: db}
+func NewPriceRepository(db *gorm.DB, catalog *CoinCatalog) PriceRepository {
+	return &PriceRepositoryImpl{db: db, catalog: catalog}
 }
 
 func (p *PriceRepositoryImpl) GetTopCoins() ([]coincap.Coin, error) {
-	var coins []coincap.Coin
-	query := `select lower(c.symbol) as id, c.symbol, coalesce(c.name, c.symbol) as name,
-		coalesce(latest.close_price, 0) as price_usd
-	from coins c
-	left join lateral (
-		select close_price from yahoo_candles
-		where symbol = c.symbol and close_price is not null
-		order by candle_date desc limit 1
-	) latest on true
-	where c.is_active
-	order by c.market_cap_rank nulls last, c.symbol`
-	err := p.db.Raw(query).Scan(&coins).Error
-	return coins, err
+	catalogCoins, err := p.catalog.List()
+	if err != nil {
+		return nil, err
+	}
+	symbols := make([]string, 0, len(catalogCoins))
+	for _, coin := range catalogCoins {
+		symbols = append(symbols, coin.Symbol)
+	}
+	type price struct {
+		Symbol string
+		Value  float32 `gorm:"column:price_usd"`
+	}
+	var prices []price
+	query := `select distinct on (symbol) symbol, close_price as price_usd
+		from yahoo_candles where symbol in (?) and close_price is not null
+		order by symbol, candle_date desc`
+	if err = p.db.Raw(query, symbols).Scan(&prices).Error; err != nil {
+		return nil, err
+	}
+	priceBySymbol := make(map[string]float32, len(prices))
+	for _, current := range prices {
+		priceBySymbol[current.Symbol] = current.Value
+	}
+	coins := make([]coincap.Coin, 0, len(catalogCoins))
+	for _, coin := range catalogCoins {
+		coins = append(coins, coincap.Coin{Id: coin.ID, Symbol: coin.Symbol, Name: coin.Name, PriceUsd: priceBySymbol[coin.Symbol]})
+	}
+	return coins, nil
 }
 
 func (p *PriceRepositoryImpl) GetHistoricalPrices(coinID string, days int) ([]coincap.History, error) {

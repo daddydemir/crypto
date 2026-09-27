@@ -2,6 +2,7 @@ package infra
 
 import (
 	"github.com/daddydemir/crypto/pkg/analyses/rsi/domain"
+	"github.com/daddydemir/crypto/pkg/infrastructure"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"gorm.io/gorm"
 	"time"
@@ -9,6 +10,7 @@ import (
 
 type Repository struct {
 	database *gorm.DB
+	catalog  *infrastructure.CoinCatalog
 }
 type Result struct {
 	ExchangeId string
@@ -16,16 +18,20 @@ type Result struct {
 	Price      float64 `gorm:"column:first_price"`
 }
 
-func NewRepository(database *gorm.DB) *Repository {
-	return &Repository{database: database}
+func NewRepository(database *gorm.DB, catalog *infrastructure.CoinCatalog) *Repository {
+	return &Repository{database: database, catalog: catalog}
 }
 
 func (p *Repository) GetTopCoinIDs() ([]coincap.Coin, error) {
-	var coins []coincap.Coin
-	query := `select lower(symbol) as id, symbol, coalesce(name, symbol) as name
-		from coins where is_active order by market_cap_rank nulls last, symbol`
-	err := p.database.Raw(query).Scan(&coins).Error
-	return coins, err
+	catalogCoins, err := p.catalog.List()
+	if err != nil {
+		return nil, err
+	}
+	coins := make([]coincap.Coin, 0, len(catalogCoins))
+	for _, coin := range catalogCoins {
+		coins = append(coins, coincap.Coin{Id: coin.ID, Symbol: coin.Symbol, Name: coin.Name})
+	}
+	return coins, nil
 }
 
 func (p *Repository) GetLastNDaysPrices(ids []string, days int) (map[string][]float64, error) {
