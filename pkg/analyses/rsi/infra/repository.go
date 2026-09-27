@@ -1,19 +1,14 @@
 package infra
 
 import (
-	"errors"
 	"github.com/daddydemir/crypto/pkg/analyses/rsi/domain"
-	"github.com/daddydemir/crypto/pkg/cache"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
-	"github.com/daddydemir/crypto/pkg/service"
 	"gorm.io/gorm"
 	"time"
 )
 
 type Repository struct {
-	cacheService cache.Cache
-	service      *service.CacheService
-	database     *gorm.DB
+	database *gorm.DB
 }
 type Result struct {
 	ExchangeId string
@@ -21,30 +16,26 @@ type Result struct {
 	Price      float64 `gorm:"column:first_price"`
 }
 
-func NewRepository(cacheService cache.Cache, service *service.CacheService, database *gorm.DB) *Repository {
-	return &Repository{
-		cacheService: cacheService,
-		service:      service,
-		database:     database,
-	}
+func NewRepository(database *gorm.DB) *Repository {
+	return &Repository{database: database}
 }
 
 func (p *Repository) GetTopCoinIDs() ([]coincap.Coin, error) {
-	coins := p.service.GetCoins()
-	if len(coins) == 0 {
-		return nil, errors.New("coin list is empty")
-	}
-	return coins, nil
+	var coins []coincap.Coin
+	query := `select lower(symbol) as id, symbol, coalesce(name, symbol) as name
+		from coins where is_active order by market_cap_rank nulls last, symbol`
+	err := p.database.Raw(query).Scan(&coins).Error
+	return coins, err
 }
 
 func (p *Repository) GetLastNDaysPrices(ids []string, days int) (map[string][]float64, error) {
 	before := time.Now().Add(-time.Hour * 24 * time.Duration(days))
 
-	sql := `select lower(c.symbol) as exchange_id , c.open_time as "date", c.close_price as first_price
-		from candles c 
+	sql := `select lower(c.symbol) as exchange_id, c.candle_date as "date", c.close_price as first_price
+		from yahoo_candles c
 		where lower(c.symbol) in (?)
-			and c.open_time > ? 
-		order by c.symbol, c.open_time`
+			and c.candle_date > ? and c.close_price is not null
+		order by c.symbol, c.candle_date`
 	var results []Result
 	tx := p.database.Raw(sql, ids, before.Format("2006-01-02")).Scan(&results)
 	if tx.Error != nil {
@@ -58,7 +49,7 @@ func (p *Repository) GetLastNDaysPrices(ids []string, days int) (map[string][]fl
 }
 
 func (p *Repository) GetHistoricalPricesDB(coinID string) ([]domain.PriceData, error) {
-	sql := `select close_price as price, close_time::date as date from candles where symbol = upper(?) order by close_time`
+	sql := `select close_price as price, candle_date as date from yahoo_candles where symbol = upper(?) and close_price is not null order by candle_date`
 	var results []domain.PriceData
 	p.database.Raw(sql, coinID).Scan(&results)
 	return results, nil

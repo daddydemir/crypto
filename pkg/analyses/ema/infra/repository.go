@@ -16,7 +16,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func (r *Repository) GetPrices(coinID string) ([]domain.PriceData, error) {
-	sql := `select close_price as price, close_time::date as date from candles where symbol = upper(?) order by close_time`
+	sql := `select close_price as price, candle_date as date from yahoo_candles where symbol = upper(?) and close_price is not null order by candle_date`
 	var results []domain.PriceData
 	r.database.Raw(sql, coinID).Scan(&results)
 	return results, nil

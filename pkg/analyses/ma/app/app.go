@@ -10,7 +10,7 @@ import (
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
 )
 
-var list = []string{"usd-coin", "paypal-usd", "ripple-usd", "tether", "ethena-usde"}
+var list = []string{"usdc", "pyusd", "usdt", "usde"}
 
 type App struct {
 	PriceRepo *infra.Repository

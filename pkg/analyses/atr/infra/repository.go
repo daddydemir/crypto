@@ -18,14 +18,16 @@ func NewRepository(db *gorm.DB) *Repository {
 
 func (r *Repository) GetPointsBySymbol(symbol string) ([]domain.AtrPoint, error) {
 	query := `
-select c.symbol
-	, c.high_price as current_high
-	, c.low_price as current_low
-	, c.open_price as yesterday_close
-	, c.open_time::date as time
-from candles c 
-where c.symbol = ?
-order by c.open_time`
+select symbol, high_price as current_high, low_price as current_low,
+	previous_close as yesterday_close, candle_date as time
+from (
+	select symbol, candle_date, high_price, low_price,
+		lag(close_price) over (partition by symbol order by candle_date) as previous_close
+	from yahoo_candles
+	where symbol = ? and high_price is not null and low_price is not null and close_price is not null
+) prices
+where previous_close is not null
+order by candle_date`
 
 	var result []domain.AtrPoint
 	err := r.db.Raw(query, strings.ToUpper(symbol)).Scan(&result).Error

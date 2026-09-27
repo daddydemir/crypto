@@ -1,9 +1,8 @@
 package infrastructure
 
 import (
-	"github.com/daddydemir/crypto/pkg/cache"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
-	"github.com/daddydemir/crypto/pkg/service"
+	"gorm.io/gorm"
 )
 
 type PriceRepository interface {
@@ -12,26 +11,43 @@ type PriceRepository interface {
 }
 
 type PriceRepositoryImpl struct {
-	service *service.CacheService
-	cache   cache.Cache
+	db *gorm.DB
 }
 
-func NewPriceRepository(service *service.CacheService, cache cache.Cache) PriceRepository {
-	return &PriceRepositoryImpl{
-		service: service,
-		cache:   cache,
-	}
+func NewPriceRepository(db *gorm.DB) PriceRepository {
+	return &PriceRepositoryImpl{db: db}
 }
 
 func (p *PriceRepositoryImpl) GetTopCoins() ([]coincap.Coin, error) {
-	return p.service.GetCoins(), nil
+	var coins []coincap.Coin
+	query := `select lower(c.symbol) as id, c.symbol, coalesce(c.name, c.symbol) as name,
+		coalesce(latest.close_price, 0) as price_usd
+	from coins c
+	left join lateral (
+		select close_price from yahoo_candles
+		where symbol = c.symbol and close_price is not null
+		order by candle_date desc limit 1
+	) latest on true
+	where c.is_active
+	order by c.market_cap_rank nulls last, c.symbol`
+	err := p.db.Raw(query).Scan(&coins).Error
+	return coins, err
 }
 
 func (p *PriceRepositoryImpl) GetHistoricalPrices(coinID string, days int) ([]coincap.History, error) {
-	list := make([]coincap.History, 0)
-	err := p.cache.GetList(coinID, &list, int64(days), -1)
-	if err != nil {
-		return nil, err
+	if days < 0 {
+		days = -days
 	}
-	return list, nil
+	if days == 0 {
+		days = 1
+	}
+	var list []coincap.History
+	query := `select close_price as price_usd, candle_date as date
+		from (
+			select close_price, candle_date from yahoo_candles
+			where lower(symbol) = lower(?) and close_price is not null
+			order by candle_date desc limit ?
+		) prices order by candle_date`
+	err := p.db.Raw(query, coinID, days).Scan(&list).Error
+	return list, err
 }

@@ -33,7 +33,6 @@ import (
 	basicApp "github.com/daddydemir/crypto/pkg/auth/basic/app"
 	basicInfra "github.com/daddydemir/crypto/pkg/auth/basic/infra"
 	basicHandler "github.com/daddydemir/crypto/pkg/auth/basic/rest"
-	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"github.com/daddydemir/crypto/pkg/token/jwt"
 
 	emaApp "github.com/daddydemir/crypto/pkg/analyses/ema/app"
@@ -43,33 +42,21 @@ import (
 	binanceCandleApp "github.com/daddydemir/crypto/pkg/binance/application"
 	binanceCandleInfra "github.com/daddydemir/crypto/pkg/binance/infrastructure"
 	binanceCandleRest "github.com/daddydemir/crypto/pkg/binance/rest"
-	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
 	donchianApp "github.com/daddydemir/crypto/pkg/channels/donchian/app"
 	donchianInfra "github.com/daddydemir/crypto/pkg/channels/donchian/infra"
 	donchianHandler "github.com/daddydemir/crypto/pkg/channels/donchian/rest"
-	"github.com/daddydemir/crypto/pkg/factory"
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 
 	"net/http"
 
-	"github.com/daddydemir/crypto/pkg/service"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
 
-var serviceFactory *factory.ServiceFactory
 var db = database.GetDatabaseService()
 var cacheService = cache.GetCacheService()
-var cacheable *service.CacheService
-var cachedClient *coincap.CachedClient
 var tokenService = jwt.NewTokenService(config.Get("JWT_SECRET"))
-
-func init() {
-	serviceFactory = factory.NewServiceFactory(db, cacheService, broker.GetBrokerService())
-	cacheable = serviceFactory.NewCacheService()
-	cachedClient = serviceFactory.NewCachedCoinCapClient()
-}
 
 func Route() http.Handler {
 	r := mux.NewRouter().StrictSlash(true)
@@ -86,11 +73,11 @@ func Route() http.Handler {
 	authorize := r.PathPrefix(base).Subrouter()
 	authorize.Use(auth)
 
-	priceRepo := infrastructure.NewPriceRepository(cacheable, cacheService)
+	priceRepo := infrastructure.NewPriceRepository(db)
 
-	coinHandler.NewHandler(coinApp.NewApp(coinInfra.NewRepository(cachedClient, db))).RegisterRoutes(subRouter)
+	coinHandler.NewHandler(coinApp.NewApp(coinInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
-	rsiHandler.NewHandler(rsiApp.NewApp(rsiInfra.NewRepository(cacheService, cacheable, db))).RegisterRoutes(subRouter)
+	rsiHandler.NewHandler(rsiApp.NewApp(rsiInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
 	maHandler.NewHandler(maApp.NewApp(maInfra.NewRepository(db), priceRepo)).RegisterRoutes(subRouter)
 

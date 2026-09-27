@@ -16,10 +16,11 @@ func NewRepository(db *gorm.DB) *Repository {
 func (r *Repository) GetRawDataWithSymbol(symbol string) ([]domain.DonchianData, error) {
 
 	query := `
-select open_time::date as date, low_price as min, high_price as max, close_price as close
-from candles
+select candle_date as date, low_price as min, high_price as max, close_price as close
+from yahoo_candles
 where symbol = upper(?)
-order by open_time asc
+	and low_price is not null and high_price is not null and close_price is not null
+order by candle_date asc
 `
 	var result []domain.DonchianData
 	err := r.db.Raw(query, symbol).Scan(&result).Error

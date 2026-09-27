@@ -17,15 +17,16 @@ func NewRepository(db *gorm.DB) *Repository {
 
 func (r *Repository) GetRawDataWithSymbol(symbol string) ([]domain.PriceData, error) {
 
-	query := `select c.open_time as date
+	query := `select c.candle_date as date
 	, c.open_price as open
 	, c.high_price as high
 	, c.low_price as low
 	, c.close_price as close
 	, c.volume
-from candles c 
+from yahoo_candles c
 where c.symbol = upper(?)
-order by c.open_time`
+	and c.open_price is not null and c.high_price is not null and c.low_price is not null and c.close_price is not null
+order by c.candle_date`
 
 	var result []domain.PriceData
 	err := r.db.Raw(query, symbol).Scan(&result).Error

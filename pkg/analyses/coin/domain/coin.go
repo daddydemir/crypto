@@ -13,10 +13,10 @@ type StatsDTO struct {
 }
 
 type Coin struct {
-	ID       string
-	Name     string
-	Symbol   string
-	PriceUSD float64
+	ID       string  `gorm:"column:id"`
+	Name     string  `gorm:"column:name"`
+	Symbol   string  `gorm:"column:symbol"`
+	PriceUSD float64 `gorm:"column:price_usd"`
 }
 
 type PriceResult struct {
