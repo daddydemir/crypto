@@ -49,6 +49,10 @@ import (
 	donchianInfra "github.com/daddydemir/crypto/pkg/channels/donchian/infra"
 	donchianHandler "github.com/daddydemir/crypto/pkg/channels/donchian/rest"
 	"github.com/daddydemir/crypto/pkg/infrastructure"
+	portfolioApp "github.com/daddydemir/crypto/pkg/portfolio/app"
+	portfolioExchange "github.com/daddydemir/crypto/pkg/portfolio/exchange"
+	portfolioInfra "github.com/daddydemir/crypto/pkg/portfolio/infra"
+	portfolioHandler "github.com/daddydemir/crypto/pkg/portfolio/rest"
 
 	"net/http"
 
@@ -92,6 +96,11 @@ func Route() http.Handler {
 	bollingerHandler.NewHandler(bollingerApp.NewApp(bollingerInfra.NewRepository(db), priceRepo)).RegisterRoutes(subRouter)
 
 	alertHandler.NewHandler(alertApp.NewApp(alertInfra.NewRepository(db))).RegisterRoutes(authorize)
+	portfolioRepository := portfolioInfra.NewRepository(db)
+	if err := portfolioRepository.Migrate(); err != nil {
+		slog.Error("failed to migrate portfolio transactions", "error", err)
+	}
+	portfolioHandler.NewHandler(portfolioApp.NewApp(portfolioRepository), portfolioExchange.NewClient()).RegisterRoutes(authorize)
 
 	binanceCandleHandler := binanceCandleRest.NewCandleHandler(binanceCandleApp.NewGetCandlesQuery(binanceCandleInfra.NewCandleRepository(db)))
 	subRouter.HandleFunc("/binance/coin/{symbol}", binanceCandleHandler.GetCandles).Methods(http.MethodGet)
