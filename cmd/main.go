@@ -8,13 +8,11 @@ import (
 	"github.com/daddydemir/crypto/config"
 	cch "github.com/daddydemir/crypto/config/cache"
 	"github.com/daddydemir/crypto/handler"
-	bnnc "github.com/daddydemir/crypto/pkg/remote/binance"
 	_ "github.com/daddydemir/dlog"
 )
 
 func main() {
 
-	go bnnc.NewClient(config.Get("WS_URL"), cch.GetRedisClient()).Fetch()
 	go handler.ListenAndBroadcast(cch.GetRedisClient())
 	server := &http.Server{
 		ReadHeaderTimeout: 3 * time.Second,
