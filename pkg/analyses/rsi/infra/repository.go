@@ -5,7 +5,6 @@ import (
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Repository struct {
@@ -35,15 +34,19 @@ func (p *Repository) GetTopCoinIDs() ([]coincap.Coin, error) {
 }
 
 func (p *Repository) GetLastNDaysPrices(ids []string, days int) (map[string][]float64, error) {
-	before := time.Now().Add(-time.Hour * 24 * time.Duration(days))
-
-	sql := `select lower(c.symbol) as exchange_id, c.candle_date as "date", c.close_price as first_price
-		from yahoo_candles c
-		where lower(c.symbol) in (?)
-			and c.candle_date > ? and c.close_price is not null
-		order by c.symbol, c.candle_date`
+	sql := `select exchange_id, "date", first_price
+		from (
+			select lower(c.symbol) as exchange_id,
+				c.candle_date as "date",
+				c.close_price as first_price,
+				row_number() over (partition by lower(c.symbol) order by c.candle_date desc) as row_number
+			from yahoo_candles c
+			where lower(c.symbol) in (?) and c.close_price is not null
+		) ranked_prices
+		where row_number <= ?
+		order by exchange_id, "date"`
 	var results []Result
-	tx := p.database.Raw(sql, ids, before.Format("2006-01-02")).Scan(&results)
+	tx := p.database.Raw(sql, ids, days).Scan(&results)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

@@ -6,12 +6,14 @@ import (
 )
 
 func Calculate(prices []float64) float64 {
-	if len(prices) < 14 {
+	const period = 14
+	if len(prices) < period+1 {
 		return 0
 	}
 
+	start := len(prices) - period - 1
 	var gains, losses float64
-	for i := 1; i < len(prices); i++ {
+	for i := start + 1; i < len(prices); i++ {
 		diff := prices[i] - prices[i-1]
 		if diff >= 0 {
 			gains += diff
@@ -20,8 +22,8 @@ func Calculate(prices []float64) float64 {
 		}
 	}
 
-	avgGain := gains / 14
-	avgLoss := losses / 14
+	avgGain := gains / period
+	avgLoss := losses / period
 
 	if avgLoss == 0 {
 		return 100
