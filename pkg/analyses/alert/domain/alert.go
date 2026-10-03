@@ -3,16 +3,20 @@ package domain
 import "time"
 
 type Alert struct {
-	ID         uint
-	Coin       string
-	Price      float32
-	IsAbove    bool
-	CreateDate time.Time
-	IsActive   bool
+	ID             uint
+	Username       string `gorm:"size:25;index" json:"-"`
+	Coin           string
+	Price          float32
+	IsAbove        bool
+	CreateDate     time.Time
+	IsActive       bool
+	TriggeredAt    *time.Time
+	TriggeredPrice float32
 }
 
-func NewAlert(coin string, price float32, isAbove bool) Alert {
+func NewAlert(username, coin string, price float32, isAbove bool) Alert {
 	return Alert{
+		Username:   username,
 		Coin:       coin,
 		Price:      price,
 		IsAbove:    isAbove,
@@ -28,4 +32,7 @@ func (a *Alert) Deactivate() {
 func (a *Alert) Update(price float32, isAbove bool) {
 	a.Price = price
 	a.IsAbove = isAbove
+	a.IsActive = true
+	a.TriggeredAt = nil
+	a.TriggeredPrice = 0
 }

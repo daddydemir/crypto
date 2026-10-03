@@ -2,6 +2,7 @@ package rabbit
 
 import (
 	"context"
+	"fmt"
 	"github.com/daddydemir/crypto/config"
 	"github.com/daddydemir/crypto/config/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -10,12 +11,17 @@ import (
 
 type Publisher struct{}
 
-func (r *Publisher) SendMessage(message string) error {
+func (r *Publisher) SendMessage(message string) (err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			err = fmt.Errorf("rabbitmq publish failed: %v", recovered)
+		}
+	}()
 
 	channel := broker.GetChannel()
 	ctx := context.Background()
 
-	err := channel.PublishWithContext(ctx,
+	err = channel.PublishWithContext(ctx,
 		"",
 		getQueue(config.Get("QUEUE_NAME")).Name,
 		false,

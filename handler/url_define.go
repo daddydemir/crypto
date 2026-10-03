@@ -48,6 +48,7 @@ import (
 	binanceCandleApp "github.com/daddydemir/crypto/pkg/binance/application"
 	binanceCandleInfra "github.com/daddydemir/crypto/pkg/binance/infrastructure"
 	binanceCandleRest "github.com/daddydemir/crypto/pkg/binance/rest"
+	"github.com/daddydemir/crypto/pkg/broker"
 	"github.com/daddydemir/crypto/pkg/cache"
 	donchianApp "github.com/daddydemir/crypto/pkg/channels/donchian/app"
 	donchianInfra "github.com/daddydemir/crypto/pkg/channels/donchian/infra"
@@ -106,7 +107,13 @@ func Route() http.Handler {
 
 	bollingerHandler.NewHandler(bollingerApp.NewApp(bollingerInfra.NewRepository(db), priceRepo)).RegisterRoutes(subRouter)
 
-	alertHandler.NewHandler(alertApp.NewApp(alertInfra.NewRepository(db))).RegisterRoutes(authorize)
+	alertRepository := alertInfra.NewRepository(db)
+	if err := alertRepository.Migrate(); err != nil {
+		slog.Error("failed to migrate alerts", "error", err)
+	}
+	alertApplication := alertApp.NewApp(alertRepository, redisConfig.GetRedisClient(), broker.GetBrokerService())
+	alertHandler.NewHandler(alertApplication).RegisterRoutes(authorize)
+	alertApplication.StartPriceWorker()
 	portfolioRepository := portfolioInfra.NewRepository(db)
 	if err := portfolioRepository.Migrate(); err != nil {
 		slog.Error("failed to migrate portfolio transactions", "error", err)
