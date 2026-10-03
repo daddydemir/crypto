@@ -13,6 +13,6 @@ func NewApp(infra *infra.Repository) *App {
 	return &App{infra: infra}
 }
 
-func (a *App) GetAll() []domain.Notification {
-	return a.infra.GetAll()
+func (a *App) GetAll(username string) []domain.Notification {
+	return a.infra.GetAll(username)
 }

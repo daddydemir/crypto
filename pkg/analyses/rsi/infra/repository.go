@@ -3,7 +3,6 @@ package infra
 import (
 	"github.com/daddydemir/crypto/pkg/analyses/rsi/domain"
 	"github.com/daddydemir/crypto/pkg/infrastructure"
-	"github.com/daddydemir/crypto/pkg/remote/coincap"
 	"gorm.io/gorm"
 )
 
@@ -21,14 +20,14 @@ func NewRepository(database *gorm.DB, catalog *infrastructure.CoinCatalog) *Repo
 	return &Repository{database: database, catalog: catalog}
 }
 
-func (p *Repository) GetTopCoinIDs() ([]coincap.Coin, error) {
+func (p *Repository) GetTopCoinIDs() ([]domain.Coin, error) {
 	catalogCoins, err := p.catalog.List()
 	if err != nil {
 		return nil, err
 	}
-	coins := make([]coincap.Coin, 0, len(catalogCoins))
+	coins := make([]domain.Coin, 0, len(catalogCoins))
 	for _, coin := range catalogCoins {
-		coins = append(coins, coincap.Coin{Id: coin.ID, Symbol: coin.Symbol, Name: coin.Name})
+		coins = append(coins, domain.Coin{Symbol: coin.Symbol, Name: coin.Name})
 	}
 	return coins, nil
 }

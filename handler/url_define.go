@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/daddydemir/crypto/config"
+	redisConfig "github.com/daddydemir/crypto/config/cache"
 	"github.com/daddydemir/crypto/config/database"
 	adiApp "github.com/daddydemir/crypto/pkg/analyses/adi/app"
 	adiInfra "github.com/daddydemir/crypto/pkg/analyses/adi/infra"
@@ -26,6 +27,9 @@ import (
 	macdApp "github.com/daddydemir/crypto/pkg/analyses/macd/app"
 	macdInfra "github.com/daddydemir/crypto/pkg/analyses/macd/infra"
 	macdHandler "github.com/daddydemir/crypto/pkg/analyses/macd/rest"
+	marketbreadthApp "github.com/daddydemir/crypto/pkg/analyses/marketbreadth/app"
+	marketbreadthInfra "github.com/daddydemir/crypto/pkg/analyses/marketbreadth/infra"
+	marketbreadthHandler "github.com/daddydemir/crypto/pkg/analyses/marketbreadth/rest"
 	notfyApp "github.com/daddydemir/crypto/pkg/analyses/notification/app"
 	notfyInfra "github.com/daddydemir/crypto/pkg/analyses/notification/infra"
 	notfyHandler "github.com/daddydemir/crypto/pkg/analyses/notification/rest"
@@ -48,11 +52,17 @@ import (
 	donchianApp "github.com/daddydemir/crypto/pkg/channels/donchian/app"
 	donchianInfra "github.com/daddydemir/crypto/pkg/channels/donchian/infra"
 	donchianHandler "github.com/daddydemir/crypto/pkg/channels/donchian/rest"
+	globalSearch "github.com/daddydemir/crypto/pkg/globalsearch"
 	"github.com/daddydemir/crypto/pkg/infrastructure"
 	portfolioApp "github.com/daddydemir/crypto/pkg/portfolio/app"
 	portfolioExchange "github.com/daddydemir/crypto/pkg/portfolio/exchange"
 	portfolioInfra "github.com/daddydemir/crypto/pkg/portfolio/infra"
 	portfolioHandler "github.com/daddydemir/crypto/pkg/portfolio/rest"
+	strategyApp "github.com/daddydemir/crypto/pkg/strategylab/app"
+	strategyInfra "github.com/daddydemir/crypto/pkg/strategylab/infra"
+	strategyHandler "github.com/daddydemir/crypto/pkg/strategylab/rest"
+	strategyScheduler "github.com/daddydemir/crypto/pkg/strategylab/scheduler"
+	tradeExplorer "github.com/daddydemir/crypto/pkg/tradeexplorer"
 
 	"net/http"
 
@@ -90,6 +100,7 @@ func Route() http.Handler {
 	rsiHandler.NewHandler(rsiApp.NewApp(rsiInfra.NewRepository(db, coinCatalog))).RegisterRoutes(subRouter)
 
 	maHandler.NewHandler(maApp.NewApp(maInfra.NewRepository(db), priceRepo)).RegisterRoutes(subRouter)
+	marketbreadthHandler.NewHandler(marketbreadthApp.NewApp(marketbreadthInfra.NewRepository(db), coinCatalog, cacheService)).RegisterRoutes(subRouter)
 
 	emaHandler.NewHandler(emaApp.NewApp(emaInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
@@ -101,6 +112,16 @@ func Route() http.Handler {
 		slog.Error("failed to migrate portfolio transactions", "error", err)
 	}
 	portfolioHandler.NewHandler(portfolioApp.NewApp(portfolioRepository), portfolioExchange.NewClient()).RegisterRoutes(authorize)
+	strategyRepository := strategyInfra.NewRepository(db)
+	if err := strategyRepository.Migrate(); err != nil {
+		slog.Error("failed to migrate strategy lab", "error", err)
+	}
+	strategyApplication := strategyApp.New(strategyRepository, redisConfig.GetRedisClient())
+	strategyHandler.New(strategyApplication).Register(authorize)
+	strategyApplication.StartBacktestWorker()
+	strategyScheduler.Start(strategyApplication)
+	tradeExplorer.NewHandler(tradeExplorer.New(db, redisConfig.GetRedisClient())).Register(authorize)
+	globalSearch.NewHandler(globalSearch.New(db, coinCatalog)).Register(authorize)
 
 	binanceCandleHandler := binanceCandleRest.NewCandleHandler(binanceCandleApp.NewGetCandlesQuery(binanceCandleInfra.NewCandleRepository(db)))
 	subRouter.HandleFunc("/binance/coin/{symbol}", binanceCandleHandler.GetCandles).Methods(http.MethodGet)
@@ -113,7 +134,7 @@ func Route() http.Handler {
 
 	macdHandler.NewHandler(macdApp.NewApp(macdInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
-	notfyHandler.NewHandler(notfyApp.NewApp(notfyInfra.NewRepository(cacheService))).RegisterRoutes(subRouter)
+	notfyHandler.NewHandler(notfyApp.NewApp(notfyInfra.NewRepository(cacheService))).RegisterRoutes(authorize)
 	basicHandler.NewHandler(basicApp.NewApp(basicInfra.NewRepository(db, tokenService))).RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)

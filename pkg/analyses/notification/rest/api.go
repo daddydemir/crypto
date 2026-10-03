@@ -16,11 +16,12 @@ func NewHandler(app *app.App) *Handler {
 	return &Handler{app: app}
 }
 
-func (h *Handler) GetAll(w http.ResponseWriter, _ *http.Request) {
-	notifications := h.app.GetAll()
+func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
+	username, _ := r.Context().Value("username").(string)
+	notifications := h.app.GetAll(username)
 	json.NewEncoder(w).Encode(notifications)
 }
 
 func (h *Handler) RegisterRoutes(r *mux.Router) {
-	r.HandleFunc("/notifications", h.GetAll)
+	r.HandleFunc("/notifications", h.GetAll).Methods(http.MethodGet)
 }

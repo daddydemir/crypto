@@ -1,8 +1,11 @@
 package domain
 
-import "github.com/daddydemir/crypto/pkg/remote/coincap"
+type Coin struct {
+	Symbol string
+	Name   string
+}
 
 type Repository interface {
 	GetLastNDaysPrices(ids []string, days int) (map[string][]float64, error)
-	GetTopCoinIDs() ([]coincap.Coin, error)
+	GetTopCoinIDs() ([]Coin, error)
 }

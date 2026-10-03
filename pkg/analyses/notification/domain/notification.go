@@ -8,5 +8,5 @@ type Notification struct {
 }
 
 type Notifications interface {
-	GetAll() []Notification
+	GetAll(username string) []Notification
 }

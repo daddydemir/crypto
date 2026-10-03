@@ -12,6 +12,7 @@ type Repository struct {
 }
 
 type Result struct {
+	Username        string `json:"username"`
 	Tip             string `json:"tip"`
 	Coin            string `json:"coin"`
 	Gorsel          string `json:"gorsel"`
@@ -24,15 +25,18 @@ func NewRepository(cacheService cache.Cache) *Repository {
 	}
 }
 
-func (r *Repository) GetAll() []domain.Notification {
+func (r *Repository) GetAll(username string) []domain.Notification {
 	var result []Result
 	err := r.cacheService.GetZList("kripto:grafikler", &result)
 	if err != nil {
 		slog.Error("Notification::GetAll", "error", err)
-		return nil
+		return []domain.Notification{}
 	}
-	var response []domain.Notification
+	response := make([]domain.Notification, 0)
 	for _, v := range result {
+		if v.Username == "" || v.Username != username {
+			continue
+		}
 		response = append(response, domain.Notification{
 			Type:       v.Tip,
 			Coin:       v.Coin,
