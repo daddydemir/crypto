@@ -59,6 +59,9 @@ import (
 	portfolioExchange "github.com/daddydemir/crypto/pkg/portfolio/exchange"
 	portfolioInfra "github.com/daddydemir/crypto/pkg/portfolio/infra"
 	portfolioHandler "github.com/daddydemir/crypto/pkg/portfolio/rest"
+	purchaseApp "github.com/daddydemir/crypto/pkg/purchasegoals/app"
+	purchaseInfra "github.com/daddydemir/crypto/pkg/purchasegoals/infra"
+	purchaseHandler "github.com/daddydemir/crypto/pkg/purchasegoals/rest"
 	strategyApp "github.com/daddydemir/crypto/pkg/strategylab/app"
 	strategyInfra "github.com/daddydemir/crypto/pkg/strategylab/infra"
 	strategyHandler "github.com/daddydemir/crypto/pkg/strategylab/rest"
@@ -119,6 +122,11 @@ func Route() http.Handler {
 		slog.Error("failed to migrate portfolio transactions", "error", err)
 	}
 	portfolioHandler.NewHandler(portfolioApp.NewApp(portfolioRepository), portfolioExchange.NewClient()).RegisterRoutes(authorize)
+	purchaseRepository := purchaseInfra.NewRepository(db)
+	if err := purchaseRepository.Migrate(); err != nil {
+		slog.Error("failed to migrate purchase goals", "error", err)
+	}
+	purchaseHandler.New(purchaseApp.New(purchaseRepository)).Register(authorize)
 	strategyRepository := strategyInfra.NewRepository(db)
 	if err := strategyRepository.Migrate(); err != nil {
 		slog.Error("failed to migrate strategy lab", "error", err)
