@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"github.com/daddydemir/crypto/config"
 	"log/slog"
 
-	"github.com/daddydemir/crypto/config"
 	redisConfig "github.com/daddydemir/crypto/config/cache"
 	"github.com/daddydemir/crypto/config/database"
 	adiApp "github.com/daddydemir/crypto/pkg/analyses/adi/app"
@@ -36,10 +36,6 @@ import (
 	rsiApp "github.com/daddydemir/crypto/pkg/analyses/rsi/app"
 	rsiInfra "github.com/daddydemir/crypto/pkg/analyses/rsi/infra"
 	rsiHandler "github.com/daddydemir/crypto/pkg/analyses/rsi/rest"
-	basicApp "github.com/daddydemir/crypto/pkg/auth/basic/app"
-	basicInfra "github.com/daddydemir/crypto/pkg/auth/basic/infra"
-	basicHandler "github.com/daddydemir/crypto/pkg/auth/basic/rest"
-	"github.com/daddydemir/crypto/pkg/token/jwt"
 
 	emaApp "github.com/daddydemir/crypto/pkg/analyses/ema/app"
 	emaInfra "github.com/daddydemir/crypto/pkg/analyses/ema/infra"
@@ -66,6 +62,7 @@ import (
 	strategyInfra "github.com/daddydemir/crypto/pkg/strategylab/infra"
 	strategyHandler "github.com/daddydemir/crypto/pkg/strategylab/rest"
 	strategyScheduler "github.com/daddydemir/crypto/pkg/strategylab/scheduler"
+	"github.com/daddydemir/crypto/pkg/token/jwt"
 	tradeExplorer "github.com/daddydemir/crypto/pkg/tradeexplorer"
 
 	"net/http"
@@ -76,6 +73,7 @@ import (
 
 var db = database.GetDatabaseService()
 var cacheService = cache.GetCacheService()
+var authenticationClient = newAuthClient()
 var tokenService = jwt.NewTokenService(config.Get("JWT_SECRET"))
 
 func Route() http.Handler {
@@ -89,9 +87,12 @@ func Route() http.Handler {
 	base := "/api/v1"
 
 	subRouter := r.PathPrefix(base).Subrouter()
+	subRouter.HandleFunc("/login", login).Methods(http.MethodPost)
+	subRouter.HandleFunc("/device-links/claim", claimDeviceLink).Methods(http.MethodPost)
 
 	authorize := r.PathPrefix(base).Subrouter()
 	authorize.Use(auth)
+	authorize.HandleFunc("/device-links", createDeviceLink).Methods(http.MethodPost)
 
 	coinCatalog := infrastructure.NewCoinCatalog(db, cacheService)
 	if _, err := coinCatalog.List(); err != nil {
@@ -150,7 +151,6 @@ func Route() http.Handler {
 	macdHandler.NewHandler(macdApp.NewApp(macdInfra.NewRepository(db))).RegisterRoutes(subRouter)
 
 	notfyHandler.NewHandler(notfyApp.NewApp(notfyInfra.NewRepository(cacheService))).RegisterRoutes(authorize)
-	basicHandler.NewHandler(basicApp.NewApp(basicInfra.NewRepository(db, tokenService))).RegisterRoutes(subRouter)
 
 	handler := cors.AllowAll().Handler(r)
 	return handler
