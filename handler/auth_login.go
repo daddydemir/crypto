@@ -3,10 +3,12 @@ package handler
 import (
 	"encoding/json"
 	httpResp "github.com/daddydemir/crypto/config/http"
+	"github.com/daddydemir/crypto/pkg/token/jwt"
 	"github.com/google/uuid"
 	"net"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type loginResponse struct {
@@ -31,7 +33,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		httpResp.WriteJSONError(w, http.StatusInternalServerError, httpResp.NewHttpError("token could not be created"))
 		return
 	}
-	if err = authenticationClient.registerSession(sessionRegistration{ID: sessionID, Username: username, Token: token, IPAddress: requestIP(r), UserAgent: r.UserAgent()}); err != nil {
+	if err = authenticationClient.registerSession(sessionRegistration{ID: sessionID, Username: username, Token: token, IPAddress: requestIP(r), UserAgent: r.UserAgent(), ExpiresAt: time.Now().Add(jwt.SessionLifetime)}); err != nil {
 		httpResp.WriteJSONError(w, http.StatusBadGateway, httpResp.NewHttpError("session could not be created"))
 		return
 	}

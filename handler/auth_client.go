@@ -17,11 +17,12 @@ type loginCredentials struct {
 	Password string `json:"password"`
 }
 type sessionRegistration struct {
-	ID        string `json:"id"`
-	Username  string `json:"username"`
-	Token     string `json:"token"`
-	IPAddress string `json:"ipAddress"`
-	UserAgent string `json:"userAgent"`
+	ID        string    `json:"id"`
+	Username  string    `json:"username"`
+	Token     string    `json:"token"`
+	IPAddress string    `json:"ipAddress"`
+	UserAgent string    `json:"userAgent"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 type deviceLinkResponse struct {
 	Code      string    `json:"code"`
