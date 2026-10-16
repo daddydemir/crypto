@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -46,6 +47,13 @@ func auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		identity, err := authenticationClient.validate(r.Header.Get("Authorization"))
 		if err != nil {
+			reason := "auth_validation_failed"
+			var validationError *authValidationError
+			if errors.As(err, &validationError) {
+				reason = validationError.reason
+			}
+			w.Header().Set("X-Auth-Reason", reason)
+			slog.Warn("authentication rejected", "method", r.Method, "path", r.URL.Path, "reason", reason)
 			httpResp.WriteJSONError(w, http.StatusUnauthorized, httpResp.NewHttpError("Unauthorized"))
 			return
 		}

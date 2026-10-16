@@ -39,6 +39,10 @@ type authClient struct {
 	client  *http.Client
 }
 
+type authValidationError struct{ reason string }
+
+func (e *authValidationError) Error() string { return e.reason }
+
 func newAuthClient() *authClient {
 	baseURL := config.Get("AUTH_SERVICE_URL")
 	if baseURL == "" {
@@ -123,18 +127,27 @@ func (c *authClient) validate(authorization string) (*authIdentity, error) {
 	request.Header.Set("Authorization", authorization)
 	response, err := c.client.Do(request)
 	if err != nil {
-		return nil, err
+		return nil, &authValidationError{reason: "auth_service_unreachable"}
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.New("invalid session")
+		var payload struct {
+			Message string `json:"message"`
+		}
+		_ = json.NewDecoder(response.Body).Decode(&payload)
+		reason := "auth_service_rejected"
+		switch payload.Message {
+		case "missing_token", "session_not_found", "session_revoked", "session_expired", "session_lookup_failed":
+			reason = payload.Message
+		}
+		return nil, &authValidationError{reason: reason}
 	}
 	var identity authIdentity
 	if err = json.NewDecoder(response.Body).Decode(&identity); err != nil {
-		return nil, err
+		return nil, &authValidationError{reason: "auth_service_invalid_response"}
 	}
 	if identity.Username == "" || identity.SessionID == "" {
-		return nil, errors.New("invalid identity")
+		return nil, &authValidationError{reason: "auth_service_invalid_identity"}
 	}
 	return &identity, nil
 }

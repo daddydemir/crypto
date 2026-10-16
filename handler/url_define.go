@@ -153,7 +153,10 @@ func Route() http.Handler {
 	notfyHandler.NewHandler(notfyApp.NewApp(notfyInfra.NewRepository(cacheService))).RegisterRoutes(authorize)
 
 	handler := cors.AllowAll().Handler(r)
-	return handler
+	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		w.Header().Set("Access-Control-Expose-Headers", "X-Auth-Reason")
+		handler.ServeHTTP(w, request)
+	})
 }
 
 func healthHandler(w http.ResponseWriter, _ *http.Request) {
