@@ -48,13 +48,21 @@ func auth(next http.Handler) http.Handler {
 		identity, err := authenticationClient.validate(r.Header.Get("Authorization"))
 		if err != nil {
 			reason := "auth_validation_failed"
+			status := http.StatusUnauthorized
 			var validationError *authValidationError
 			if errors.As(err, &validationError) {
 				reason = validationError.reason
+				if validationError.status != 0 {
+					status = validationError.status
+				}
 			}
 			w.Header().Set("X-Auth-Reason", reason)
-			slog.Warn("authentication rejected", "method", r.Method, "path", r.URL.Path, "reason", reason)
-			httpResp.WriteJSONError(w, http.StatusUnauthorized, httpResp.NewHttpError("Unauthorized"))
+			slog.Warn("authentication rejected", "method", r.Method, "path", r.URL.Path, "reason", reason, "status", status)
+			message := "Unauthorized"
+			if status >= http.StatusInternalServerError {
+				message = "Authentication service temporarily unavailable"
+			}
+			httpResp.WriteJSONError(w, status, httpResp.NewHttpError(message))
 			return
 		}
 		ctx := context.WithValue(r.Context(), "username", identity.Username)

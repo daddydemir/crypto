@@ -39,7 +39,10 @@ type authClient struct {
 	client  *http.Client
 }
 
-type authValidationError struct{ reason string }
+type authValidationError struct {
+	reason string
+	status int
+}
 
 func (e *authValidationError) Error() string { return e.reason }
 
@@ -118,7 +121,7 @@ func (c *authClient) claimDeviceLink(code string) (string, error) {
 
 func (c *authClient) validate(authorization string) (*authIdentity, error) {
 	if c.baseURL == "" {
-		return nil, errors.New("auth service URL is not configured")
+		return nil, &authValidationError{reason: "auth_service_not_configured", status: http.StatusServiceUnavailable}
 	}
 	request, err := http.NewRequest(http.MethodGet, c.baseURL+"/api/v1/sessions/validate", nil)
 	if err != nil {
@@ -127,7 +130,7 @@ func (c *authClient) validate(authorization string) (*authIdentity, error) {
 	request.Header.Set("Authorization", authorization)
 	response, err := c.client.Do(request)
 	if err != nil {
-		return nil, &authValidationError{reason: "auth_service_unreachable"}
+		return nil, &authValidationError{reason: "auth_service_unreachable", status: http.StatusServiceUnavailable}
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
@@ -136,18 +139,22 @@ func (c *authClient) validate(authorization string) (*authIdentity, error) {
 		}
 		_ = json.NewDecoder(response.Body).Decode(&payload)
 		reason := "auth_service_rejected"
+		status := response.StatusCode
 		switch payload.Message {
 		case "missing_token", "session_not_found", "session_revoked", "session_expired", "session_lookup_failed":
 			reason = payload.Message
 		}
-		return nil, &authValidationError{reason: reason}
+		if response.StatusCode >= http.StatusInternalServerError || reason == "session_lookup_failed" {
+			status = http.StatusServiceUnavailable
+		}
+		return nil, &authValidationError{reason: reason, status: status}
 	}
 	var identity authIdentity
 	if err = json.NewDecoder(response.Body).Decode(&identity); err != nil {
-		return nil, &authValidationError{reason: "auth_service_invalid_response"}
+		return nil, &authValidationError{reason: "auth_service_invalid_response", status: http.StatusBadGateway}
 	}
 	if identity.Username == "" || identity.SessionID == "" {
-		return nil, &authValidationError{reason: "auth_service_invalid_identity"}
+		return nil, &authValidationError{reason: "auth_service_invalid_identity", status: http.StatusBadGateway}
 	}
 	return &identity, nil
 }
